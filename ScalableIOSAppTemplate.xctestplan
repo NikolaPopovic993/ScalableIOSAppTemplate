@@ -1,0 +1,31 @@
+{
+  "configurations" : [
+    {
+      "id" : "8FEB0821-2F03-4832-9CCA-6FE8CD3DEE7A",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/CorePackage",
+        "identifier" : "CoreUtilitiesTests",
+        "name" : "CoreUtilitiesTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:ScalableIOSAppTemplate.xcodeproj",
+        "identifier" : "9E0928143025FE0200FE4DE3",
+        "name" : "ScalableIOSAppTemplateTests"
+      }
+    }
+  ],
+  "version" : 1
+}
