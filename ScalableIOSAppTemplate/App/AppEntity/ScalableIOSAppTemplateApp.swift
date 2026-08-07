@@ -9,9 +9,14 @@ import SwiftUI
 
 @main
 struct ScalableIOSAppTemplateApp: App {
+
+    private let container = AppContainer()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView(
+                container: container
+            )
         }
     }
 }
