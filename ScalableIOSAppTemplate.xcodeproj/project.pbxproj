@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9E09285B302610E600FE4DE3 /* CoreUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09285A302610E600FE4DE3 /* CoreUI */; };
+		9E09285E302611B700FE4DE3 /* CoreUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09285D302611B700FE4DE3 /* CoreUI */; };
+		9E0928613026135400FE4DE3 /* CoreUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9E0928603026135400FE4DE3 /* CoreUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		9E0928163025FE0200FE4DE3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +33,7 @@
 		9E0928083025FE0100FE4DE3 /* ScalableIOSAppTemplate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScalableIOSAppTemplate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E0928153025FE0200FE4DE3 /* ScalableIOSAppTemplateTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ScalableIOSAppTemplateTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E09281F3025FE0200FE4DE3 /* ScalableIOSAppTemplateUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ScalableIOSAppTemplateUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9E0928AA302617F100FE4DE3 /* ScalableIOSAppTemplate.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = ScalableIOSAppTemplate.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -63,6 +70,11 @@
 			path = Config;
 			sourceTree = "<group>";
 		};
+		9E09285630260C6A00FE4DE3 /* Packages */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Packages;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +82,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E09285B302610E600FE4DE3 /* CoreUI in Frameworks */,
+				9E09285E302611B700FE4DE3 /* CoreUI in Frameworks */,
+				9E0928613026135400FE4DE3 /* CoreUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,6 +108,8 @@
 		9E0927FF3025FE0000FE4DE3 = {
 			isa = PBXGroup;
 			children = (
+				9E0928AA302617F100FE4DE3 /* ScalableIOSAppTemplate.xctestplan */,
+				9E09285630260C6A00FE4DE3 /* Packages */,
 				9E09283B3026006F00FE4DE3 /* Config */,
 				9E09280A3025FE0100FE4DE3 /* ScalableIOSAppTemplate */,
 				9E0928183025FE0200FE4DE3 /* ScalableIOSAppTemplateTests */,
@@ -129,9 +146,13 @@
 			fileSystemSynchronizedGroups = (
 				9E09280A3025FE0100FE4DE3 /* ScalableIOSAppTemplate */,
 				9E09283B3026006F00FE4DE3 /* Config */,
+				9E09285630260C6A00FE4DE3 /* Packages */,
 			);
 			name = ScalableIOSAppTemplate;
 			packageProductDependencies = (
+				9E09285A302610E600FE4DE3 /* CoreUI */,
+				9E09285D302611B700FE4DE3 /* CoreUI */,
+				9E0928603026135400FE4DE3 /* CoreUI */,
 			);
 			productName = ScalableIOSAppTemplate;
 			productReference = 9E0928083025FE0100FE4DE3 /* ScalableIOSAppTemplate.app */;
@@ -215,6 +236,9 @@
 			);
 			mainGroup = 9E0927FF3025FE0000FE4DE3;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9E09285F3026135400FE4DE3 /* XCLocalSwiftPackageReference "Packages/CorePackage" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9E0928093025FE0100FE4DE3 /* Products */;
 			projectDirPath = "";
@@ -598,6 +622,28 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		9E09285F3026135400FE4DE3 /* XCLocalSwiftPackageReference "Packages/CorePackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/CorePackage;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9E09285A302610E600FE4DE3 /* CoreUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreUI;
+		};
+		9E09285D302611B700FE4DE3 /* CoreUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreUI;
+		};
+		9E0928603026135400FE4DE3 /* CoreUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9E0928003025FE0000FE4DE3 /* Project object */;
 }

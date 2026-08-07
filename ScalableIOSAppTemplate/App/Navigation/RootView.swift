@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreUI
 
 struct RootView: View {
 
@@ -33,6 +34,8 @@ struct RootView: View {
                 )
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                
+                AppLoadingView(title: "Loading...")
             }
             .padding()
         }
