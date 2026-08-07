@@ -29,9 +29,22 @@
 		9E09281F3025FE0200FE4DE3 /* ScalableIOSAppTemplateUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ScalableIOSAppTemplateUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9E0928503026032900FE4DE3 /* Exceptions for "ScalableIOSAppTemplate" folder in "ScalableIOSAppTemplate" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9E0928073025FE0100FE4DE3 /* ScalableIOSAppTemplate */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9E09280A3025FE0100FE4DE3 /* ScalableIOSAppTemplate */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9E0928503026032900FE4DE3 /* Exceptions for "ScalableIOSAppTemplate" folder in "ScalableIOSAppTemplate" target */,
+			);
 			path = ScalableIOSAppTemplate;
 			sourceTree = "<group>";
 		};
@@ -43,6 +56,11 @@
 		9E0928223025FE0200FE4DE3 /* ScalableIOSAppTemplateUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = ScalableIOSAppTemplateUITests;
+			sourceTree = "<group>";
+		};
+		9E09283B3026006F00FE4DE3 /* Config */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +93,7 @@
 		9E0927FF3025FE0000FE4DE3 = {
 			isa = PBXGroup;
 			children = (
+				9E09283B3026006F00FE4DE3 /* Config */,
 				9E09280A3025FE0100FE4DE3 /* ScalableIOSAppTemplate */,
 				9E0928183025FE0200FE4DE3 /* ScalableIOSAppTemplateTests */,
 				9E0928223025FE0200FE4DE3 /* ScalableIOSAppTemplateUITests */,
@@ -109,6 +128,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				9E09280A3025FE0100FE4DE3 /* ScalableIOSAppTemplate */,
+				9E09283B3026006F00FE4DE3 /* Config */,
 			);
 			name = ScalableIOSAppTemplate;
 			packageProductDependencies = (
@@ -271,6 +291,8 @@
 /* Begin XCBuildConfiguration section */
 		9E0928273025FE0200FE4DE3 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 9E09283B3026006F00FE4DE3 /* Config */;
+			baseConfigurationReferenceRelativePath = Debug.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -334,6 +356,8 @@
 		};
 		9E0928283025FE0200FE4DE3 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 9E09283B3026006F00FE4DE3 /* Config */;
+			baseConfigurationReferenceRelativePath = Release.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -397,6 +421,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScalableIOSAppTemplate/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Scalable iOS App Template";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -428,6 +454,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScalableIOSAppTemplate/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Scalable iOS App Template";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

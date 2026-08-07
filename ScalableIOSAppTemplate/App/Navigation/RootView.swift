@@ -27,6 +27,12 @@ struct RootView: View {
 
                 Text("Architecture foundation is ready.")
                     .foregroundStyle(.secondary)
+
+                Text(
+                    "Environment: \(container.configuration.environment.rawValue)"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
             .padding()
         }
@@ -35,6 +41,11 @@ struct RootView: View {
 
 #Preview {
     RootView(
-        container: AppContainer()
+        container: AppContainer(
+            configuration: AppConfiguration(
+                environment: .development,
+                isLoggingEnabled: true
+            )
+        )
     )
 }

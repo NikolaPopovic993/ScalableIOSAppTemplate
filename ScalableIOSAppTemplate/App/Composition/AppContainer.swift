@@ -9,5 +9,11 @@ import Foundation
 
 final class AppContainer {
 
-    init() {}
+    let configuration: AppConfiguration
+
+    init(
+        configuration: AppConfiguration
+    ) {
+        self.configuration = configuration
+    }
 }
