@@ -1,0 +1,11 @@
+//
+//  Release.xcconfig
+//  ScalableIOSAppTemplate
+//
+//  Created by Nikola Popovic on 7. 8. 2026..
+//
+
+#include "Shared.xcconfig"
+
+APP_ENVIRONMENT = production
+ENABLE_APP_LOGGING = NO

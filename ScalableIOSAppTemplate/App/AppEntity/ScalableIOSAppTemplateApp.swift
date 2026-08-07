@@ -7,10 +7,20 @@
 
 import SwiftUI
 
+import SwiftUI
+
 @main
 struct ScalableIOSAppTemplateApp: App {
 
-    private let container = AppContainer()
+    private let container: AppContainer
+
+    init() {
+        let configuration = AppConfiguration.load()
+
+        container = AppContainer(
+            configuration: configuration
+        )
+    }
 
     var body: some Scene {
         WindowGroup {
