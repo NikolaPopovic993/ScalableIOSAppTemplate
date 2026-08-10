@@ -440,7 +440,7 @@ if [[ "$USES_NETWORKING" == true ]]; then
             dependencies: [
                 "${FEATURE_NAME}Domain",
                 .product(
-                    name: "CoreUI",
+                    name: "SharedUI",
                     package: "CorePackage"
                 )
             ]
@@ -478,7 +478,7 @@ else
             dependencies: [
                 "${FEATURE_NAME}Domain",
                 .product(
-                    name: "CoreUI",
+                    name: "SharedUI",
                     package: "CorePackage"
                 )
             ]

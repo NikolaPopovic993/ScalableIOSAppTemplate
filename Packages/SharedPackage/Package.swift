@@ -15,12 +15,12 @@ let package = Package(
             targets: ["CoreDomain"]
         ),
         .library(
-            name: "CoreUI",
-            targets: ["CoreUI"]
+            name: "SharedUI",
+            targets: ["SharedUI"]
         ),
         .library(
-            name: "CoreUtilities",
-            targets: ["CoreUtilities"]
+            name: "SharedUtilities",
+            targets: ["SharedUtilities"]
         ),
     ],
     targets: [
@@ -30,14 +30,14 @@ let package = Package(
             name: "CoreDomain"
         ),
         .target(
-            name: "CoreUI"
+            name: "SharedUI"
         ),
         .target(
-            name: "CoreUtilities"
+            name: "SharedUtilities"
         ),
         .testTarget(
-            name: "CoreUtilitiesTests",
-            dependencies: ["CoreUtilities"]
+            name: "SharedUtilitiesTests",
+            dependencies: ["SharedUtilities"]
         ),
     ],
     swiftLanguageModes: [.v6]
