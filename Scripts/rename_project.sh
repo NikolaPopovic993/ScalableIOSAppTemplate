@@ -21,6 +21,7 @@ set -e
 # - App entry file/type
 # - Unit test target references
 # - UI test target references
+# - Xcode test plan
 #
 # It does NOT change:
 #
@@ -62,7 +63,6 @@ fail() {
 
 
 rename_if_exists() {
-
     local source="$1"
     local destination="$2"
 
@@ -83,14 +83,12 @@ rename_if_exists() {
 
 
 replace_project_name_in_tracked_files() {
-
     echo ""
     echo "Updating project references..."
     echo ""
 
     git grep -Il "$OLD_NAME" -- . | while IFS= read -r file
     do
-
         # Do not modify this script itself.
         if [[ "$file" == "Scripts/rename_project.sh" ]]; then
             continue
@@ -101,7 +99,6 @@ replace_project_name_in_tracked_files() {
             "$file"
 
         echo "Updated: $file"
-
     done
 }
 
@@ -121,7 +118,6 @@ fi
 
 
 if [[ -n "$(git status --porcelain)" ]]; then
-
     fail "The Git working tree must be clean before renaming the project.
 
 Commit or discard existing changes first.
@@ -131,7 +127,6 @@ Recommended order:
 1. Create repository from template
 2. Run ./Scripts/rename_project.sh
 3. Run ./Scripts/setup.sh"
-
 fi
 
 
@@ -157,7 +152,6 @@ fi
 
 
 if [[ ! "$NEW_NAME" =~ ^[A-Za-z][A-Za-z0-9]*$ ]]; then
-
     fail "Invalid project name.
 
 Use a technical project name containing only letters and numbers.
@@ -169,7 +163,6 @@ Biologer
 BankingApp
 
 Do not use spaces, hyphens, or special characters."
-
 fi
 
 
@@ -205,7 +198,7 @@ fi
 replace_project_name_in_tracked_files
 
 
-# MARK: - Rename Top-Level Directories
+# MARK: - Rename Top-Level Structure
 
 echo ""
 echo "Renaming project structure..."
@@ -226,6 +219,13 @@ rename_if_exists \
 rename_if_exists \
     "${OLD_NAME}UITests" \
     "${NEW_NAME}UITests"
+
+
+# MARK: - Rename Test Plan
+
+rename_if_exists \
+    "${OLD_NAME}.xctestplan" \
+    "${NEW_NAME}.xctestplan"
 
 
 # MARK: - Rename Scheme
@@ -264,11 +264,13 @@ echo "Checking for remaining project-name references..."
 echo ""
 
 REMAINING_REFERENCES="$(
-    git grep -n "$OLD_NAME" -- . \
-        ':!Scripts/rename_project.sh' \
+    grep -RIl \
+        --exclude-dir=.git \
+        --exclude=rename_project.sh \
+        "$OLD_NAME" \
+        . \
         2>/dev/null || true
 )"
-
 
 REMAINING_PATHS="$(
     find . \
@@ -279,31 +281,23 @@ REMAINING_PATHS="$(
 
 
 if [[ -n "$REMAINING_REFERENCES" ]]; then
-
     echo "⚠️ Some textual references still contain '$OLD_NAME':"
     echo ""
     echo "$REMAINING_REFERENCES"
     echo ""
-
 else
-
     echo "✓ No remaining textual project references found."
-
 fi
 
 
 if [[ -n "$REMAINING_PATHS" ]]; then
-
     echo ""
     echo "⚠️ Some paths still contain '$OLD_NAME':"
     echo ""
     echo "$REMAINING_PATHS"
     echo ""
-
 else
-
     echo "✓ No remaining project paths found."
-
 fi
 
 
@@ -331,6 +325,9 @@ echo "3. Open:"
 echo ""
 echo "   ${NEW_NAME}.xcodeproj"
 echo ""
-echo "4. Build the application"
-echo "5. Run UnitTests.xctestplan"
+echo "4. Build and run the application"
+echo ""
+echo "5. Run the configured test plan:"
+echo ""
+echo "   ${NEW_NAME}.xctestplan"
 echo ""
