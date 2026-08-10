@@ -18,7 +18,9 @@ The template demonstrates:
 - Initializer-based dependency injection
 - Application and feature composition roots
 - Build configuration with `.xcconfig`
-- Interactive project setup
+- Automated project bootstrap
+- Automated Xcode project rename
+- Local secrets configuration
 - Unit testing with Swift Testing
 - Xcode Test Plans
 - Integration with a reusable networking package
@@ -30,77 +32,260 @@ The template demonstrates:
 - Xcode with Swift 6 support
 - iOS 17+
 - Swift Package Manager
+- macOS
 
 ---
 
-## Quick Setup
+## Quick Start
 
-After cloning or creating a repository from this template, run:
+The recommended way to start a new application is to create a repository from
+this GitHub template and run the bootstrap script.
+
+### 1. Create a Repository From the Template
+
+Use:
+
+```text
+Use this template
+→ Create a new repository
+```
+
+on GitHub.
+
+Then clone the newly created repository:
+
+```bash
+git clone <your-new-repository-url>
+cd <your-new-repository>
+```
+
+### 2. Run Bootstrap
+
+Run:
+
+```bash
+./Scripts/bootstrap.sh
+```
+
+The bootstrap script asks for:
+
+- Technical Xcode project name
+- Application display name
+- Bundle identifier
+- API scheme
+- API host
+
+Example:
+
+```text
+Technical project name [MyAwesomeApp]: Biologer
+App display name [My Awesome App]: Biologer
+Bundle identifier [com.example.myawesomeapp]: rs.biologer.app
+API scheme [https]:
+API host [dummyjson.com]:
+```
+
+Before making any changes, the script displays a summary:
+
+```text
+Application Configuration
+========================================
+
+Technical project name:
+  Biologer
+
+Application display name:
+  Biologer
+
+Bundle identifier:
+  rs.biologer.app
+
+API:
+  https://dummyjson.com
+
+========================================
+
+Create this application? [Y/n]:
+```
+
+After confirmation, the complete project setup is performed automatically.
+
+The bootstrap process:
+
+1. Renames the Xcode project.
+2. Renames application target references.
+3. Renames the shared scheme.
+4. Renames the application source directory.
+5. Renames unit test and UI test directories.
+6. Renames the SwiftUI App entry point.
+7. Renames test source references.
+8. Renames the Xcode Test Plan.
+9. Configures the application display name.
+10. Configures the bundle identifier.
+11. Configures the API scheme and host.
+12. Creates the local secrets configuration.
+
+After bootstrap, the project is ready to open in Xcode.
+
+For example:
+
+```text
+Biologer.xcodeproj
+```
+
+### 3. Open the Project
+
+Open the generated `.xcodeproj` file.
+
+Then:
+
+1. Review `Config/Secrets.xcconfig`.
+2. Select a Development Team if required.
+3. Build and run the application.
+4. Run the configured tests with `⌘ + U`.
+
+> Run `bootstrap.sh` on a clean Git working tree immediately after creating
+> or cloning a repository from this template.
+
+> `Config/Secrets.xcconfig` is intentionally ignored by Git. Never commit
+> production secrets, private tokens, signing credentials, certificates, or
+> other sensitive values to source control.
+
+---
+
+## What Bootstrap Configures
+
+The bootstrap process separates the technical Xcode project identity from the
+application-facing identity.
+
+For example:
+
+```text
+Technical project name:
+Biologer
+
+Application display name:
+Biologer
+
+Bundle identifier:
+rs.biologer.app
+```
+
+The technical project name is used for:
+
+```text
+Biologer.xcodeproj
+Biologer target
+Biologer scheme
+Biologer/
+BiologerTests/
+BiologerUITests/
+Biologer.xctestplan
+BiologerApp.swift
+```
+
+The application-facing configuration is stored in `.xcconfig`:
+
+```text
+APP_DISPLAY_NAME = Biologer
+APP_BUNDLE_IDENTIFIER = rs.biologer.app
+
+API_SCHEME = https
+API_HOST = dummyjson.com
+```
+
+This keeps Xcode project configuration centralized and avoids duplicating
+application-specific values throughout the project.
+
+---
+
+## Advanced Setup
+
+The bootstrap workflow is composed of two smaller scripts:
+
+```text
+Scripts/
+├── bootstrap.sh
+├── rename_project.sh
+└── setup.sh
+```
+
+For normal template usage:
+
+```bash
+./Scripts/bootstrap.sh
+```
+
+is recommended.
+
+The smaller scripts can also be used independently.
+
+### Rename Only the Xcode Project
+
+Interactive:
+
+```bash
+./Scripts/rename_project.sh
+```
+
+Non-interactive:
+
+```bash
+./Scripts/rename_project.sh \
+    --name MyAwesomeApp \
+    --yes
+```
+
+This script performs the technical project rename but does not change the
+application display name, bundle identifier, API configuration, or secrets.
+
+### Configure Only Application Values
+
+Interactive:
 
 ```bash
 ./Scripts/setup.sh
 ```
 
-The setup script configures:
+Non-interactive:
 
-- Application display name
-- Bundle identifier
-- API scheme
-- API host
-- Local secrets configuration
-
-Example:
-
-```text
-App display name: My Awesome App
-Bundle identifier: com.company.myawesomeapp
-API scheme [https]:
-API host [dummyjson.com]: api.example.com
+```bash
+./Scripts/setup.sh \
+    --display-name "My Awesome App" \
+    --bundle-id "com.company.myawesomeapp" \
+    --api-scheme "https" \
+    --api-host "api.example.com" \
+    --yes
 ```
 
-The script updates the application's `.xcconfig` configuration without
-modifying the Xcode project file.
+This script changes application-facing configuration without performing the
+technical project rename.
 
-After setup:
+---
 
-1. Review `Config/Secrets.xcconfig`.
-2. Open `ScalableIOSAppTemplate.xcodeproj`.
-3. Select a Development Team if required.
-4. Build and run the application.
-5. Run the configured unit test plan with `⌘ + U`.
+## Bootstrap Recovery
 
-> `Config/Secrets.xcconfig` is intentionally ignored by Git. Never commit
-> production secrets, private tokens, signing credentials, or other sensitive
-> values to source control.
+The bootstrap script requires a clean Git working tree.
 
-### What the Setup Script Does Not Rename
+This makes it easy to inspect or discard generated changes if something goes
+wrong.
 
-The setup script configures application-facing values but intentionally does
-not rename the technical Xcode project structure.
+Review changes with:
 
-It does not rename:
-
-```text
-ScalableIOSAppTemplate.xcodeproj
-ScalableIOSAppTemplate target
-ScalableIOSAppTemplate scheme
-ScalableIOSAppTemplate source folder
-ScalableIOSAppTemplateApp type
-Test target names
+```bash
+git status
 ```
 
-These names may be renamed manually if a complete project rename is desired.
+For a fresh repository created from the template, bootstrap changes can be
+discarded with:
 
-The application can still use its real:
-
-```text
-Display Name
-Bundle Identifier
-API configuration
-Secrets
+```bash
+git reset --hard HEAD
+git clean -fd
 ```
 
-without renaming the underlying Xcode project.
+> `git clean -fd` removes untracked files and directories. Use it only when
+> you understand which files will be deleted.
 
 ---
 
@@ -143,8 +328,9 @@ The Domain layer does not know about UI, networking, persistence, or concrete
 repository implementations.
 
 For a detailed explanation of module responsibilities, dependency rules,
-shared domain concepts, navigation, and scaling strategies, see
-[Documentation/Architecture.md](Documentation/Architecture.md).
+shared domain concepts, navigation, session state, and scaling strategies, see:
+
+[Documentation/Architecture.md](Documentation/Architecture.md)
 
 ---
 
@@ -184,6 +370,8 @@ ScalableIOSAppTemplate/
 │           └── AuthenticationDataTests/
 │
 ├── Scripts/
+│   ├── bootstrap.sh
+│   ├── rename_project.sh
 │   └── setup.sh
 │
 ├── ScalableIOSAppTemplate/
@@ -197,7 +385,7 @@ ScalableIOSAppTemplate/
 ├── ScalableIOSAppTemplateTests/
 ├── ScalableIOSAppTemplateUITests/
 │
-├── UnitTests.xctestplan
+├── ScalableIOSAppTemplate.xctestplan
 ├── README.md
 ├── LICENSE
 └── .gitignore
@@ -205,127 +393,7 @@ ScalableIOSAppTemplate/
 
 External dependencies are resolved through Swift Package Manager.
 
-The example implementation currently uses `CoreNetworking` as its networking
-package.
-
----
-
-## Getting Started
-
-### 1. Create a Project From the Template
-
-Use the GitHub template repository functionality or clone the repository
-directly.
-
-```bash
-git clone <repository-url>
-cd ScalableIOSAppTemplate
-```
-
-For a new application, using GitHub's **Use this template** option is
-recommended because the new repository starts with its own Git history.
-
-### 2. Run the Setup Script
-
-```bash
-./Scripts/setup.sh
-```
-
-Configure the application name, bundle identifier, and API environment.
-
-### 3. Open the Project
-
-Open:
-
-```text
-ScalableIOSAppTemplate.xcodeproj
-```
-
-Xcode should resolve Swift Package dependencies automatically.
-
-### 4. Configure Signing
-
-If required, open the application target and select the appropriate
-Development Team under:
-
-```text
-Signing & Capabilities
-```
-
-### 5. Configure Local Secrets
-
-The setup script creates:
-
-```text
-Config/Secrets.xcconfig
-```
-
-from:
-
-```text
-Config/Secrets.example.xcconfig
-```
-
-Add any required local values there.
-
-`Secrets.xcconfig` is ignored by Git.
-
-### 6. Build and Test
-
-Build and run the application.
-
-Then run the complete configured unit test suite with:
-
-```text
-⌘ + U
-```
-
----
-
-## Manual Configuration
-
-The setup script is optional.
-
-All application-facing configuration can also be changed manually through:
-
-```text
-Config/Shared.xcconfig
-```
-
-For example:
-
-```text
-APP_DISPLAY_NAME = My Awesome App
-APP_BUNDLE_IDENTIFIER = com.company.myawesomeapp
-
-API_SCHEME = https
-API_HOST = api.example.com
-```
-
-These values are wired into the Xcode build configuration.
-
-The application display name is resolved through:
-
-```text
-APP_DISPLAY_NAME
-    ↓
-INFOPLIST_KEY_CFBundleDisplayName
-    ↓
-CFBundleDisplayName
-```
-
-The bundle identifier is resolved through:
-
-```text
-APP_BUNDLE_IDENTIFIER
-    ↓
-PRODUCT_BUNDLE_IDENTIFIER
-    ↓
-CFBundleIdentifier
-```
-
-This prevents application-specific values from being duplicated throughout
-the Xcode project.
+The example implementation uses `CoreNetworking` as its networking package.
 
 ---
 
@@ -344,22 +412,48 @@ Config/
 
 ### Shared Configuration
 
-Contains values shared by build configurations.
+Contains configuration shared across build environments.
 
 Examples:
 
 ```text
-Application display name
-Bundle identifier
-API configuration
-Deployment target
-Marketing version
-Build number
+APP_DISPLAY_NAME
+APP_BUNDLE_IDENTIFIER
+
+API_SCHEME
+API_HOST
+
+MARKETING_VERSION
+CURRENT_PROJECT_VERSION
+IPHONEOS_DEPLOYMENT_TARGET
 ```
+
+Application identity is wired through build settings:
+
+```text
+APP_DISPLAY_NAME
+    ↓
+INFOPLIST_KEY_CFBundleDisplayName
+    ↓
+CFBundleDisplayName
+```
+
+Bundle identifier:
+
+```text
+APP_BUNDLE_IDENTIFIER
+    ↓
+PRODUCT_BUNDLE_IDENTIFIER
+    ↓
+CFBundleIdentifier
+```
+
+This prevents application-specific values from being hardcoded in multiple
+places.
 
 ### Debug Configuration
 
-Contains development-specific settings.
+Contains development-specific configuration.
 
 Example:
 
@@ -370,7 +464,7 @@ ENABLE_APP_LOGGING = YES
 
 ### Release Configuration
 
-Contains production-specific settings.
+Contains production-specific configuration.
 
 Example:
 
@@ -379,8 +473,8 @@ APP_ENVIRONMENT = production
 ENABLE_APP_LOGGING = NO
 ```
 
-Environment-specific values are loaded into `AppConfiguration` and provided
-to the application through the composition root.
+Configuration values are loaded into `AppConfiguration` and provided to the
+application through the Composition Root.
 
 ---
 
@@ -394,18 +488,19 @@ The repository contains:
 Config/Secrets.example.xcconfig
 ```
 
-to document the local values an application may require.
+to document local configuration values that an application may require.
 
-The setup script creates:
+During bootstrap, the template creates:
 
 ```text
 Config/Secrets.xcconfig
 ```
 
-when it does not already exist.
+if it does not already exist.
 
-Existing local secret values are preserved when the setup script is executed
-again.
+Existing local secret values are preserved when `setup.sh` is executed again.
+
+`Secrets.xcconfig` is ignored by Git.
 
 Do not commit:
 
@@ -451,7 +546,7 @@ The example demonstrates:
 - Use cases
 - Domain validation
 - DTOs
-- Mapping
+- DTO-to-Domain mapping
 - Endpoints
 - Repository implementations
 - ViewModels
@@ -470,7 +565,7 @@ It may be adapted to the new application or removed completely.
 
 ## Removing the Example Authentication Feature
 
-Remove the following source targets from `FeaturesPackage`:
+Remove the following targets from `FeaturesPackage`:
 
 ```text
 AuthenticationDomain
@@ -501,19 +596,25 @@ test targets
 dependencies that are no longer required
 ```
 
-Also remove the Authentication feature construction from `AppContainer` and
-replace the current root screen in `RootView`.
+Also remove Authentication feature construction from:
+
+```text
+AppContainer
+```
+
+and replace the current root screen in:
+
+```text
+RootView
+```
+
+with the first flow or feature of the new application.
+
+After removing test targets, update the Xcode Test Plan so it contains only
+valid test targets.
 
 If no remaining feature uses `CoreNetworking`, the networking dependency may
 also be removed.
-
-After removing test targets, update:
-
-```text
-UnitTests.xctestplan
-```
-
-so it contains only valid test targets.
 
 ---
 
@@ -603,7 +704,7 @@ Other required infrastructure
 
 ### ProfileInterface
 
-Contains:
+Contains presentation code:
 
 ```text
 State
@@ -628,7 +729,7 @@ CoreNetworking
 
 ### ProfileAssembly
 
-Creates the feature dependency graph.
+Creates the feature dependency graph:
 
 ```text
 Repository
@@ -640,7 +741,7 @@ ViewModel
 View
 ```
 
-The application should normally depend on the Feature Assembly rather than
+The application should normally depend on the Feature Assembly instead of
 constructing every internal feature dependency itself.
 
 ---
@@ -649,8 +750,8 @@ constructing every internal feature dependency itself.
 
 The template does not create a separate Swift Package for every feature.
 
-`FeaturesPackage` acts as a container for independently compiled Swift
-targets.
+Instead, `FeaturesPackage` acts as a container for independently compiled
+Swift targets.
 
 For example:
 
@@ -712,6 +813,44 @@ Avoid using global singletons as the primary dependency mechanism.
 
 ---
 
+## Composition
+
+The application uses two composition levels.
+
+### Application Composition Root
+
+`AppContainer` creates application-wide dependencies such as:
+
+```text
+Networking
+Shared configuration
+Feature builders
+Application-level services
+```
+
+### Feature Assembly
+
+Each feature creates its own internal dependency graph.
+
+Example:
+
+```text
+AuthenticationFeatureBuilder
+        ↓
+DefaultAuthenticationRepository
+        ↓
+DefaultLoginUseCase
+        ↓
+LoginViewModel
+        ↓
+LoginView
+```
+
+The host application therefore does not need to know how every object inside a
+feature is created.
+
+---
+
 ## Networking
 
 Networking is provided through the external `CoreNetworking` Swift Package.
@@ -733,7 +872,7 @@ DefaultAuthenticationRepository
 Domain and Interface modules remain independent from networking
 implementation details.
 
-This keeps the architecture independent from a specific HTTP implementation.
+This keeps business logic independent from a specific HTTP implementation.
 
 ---
 
@@ -764,24 +903,35 @@ Feature tests should not re-test implementation details already owned by
 external packages.
 
 For example, Authentication Data tests do not need to test `URLSession`,
-HTTP response validation, or generic JSON decoding because those
+generic HTTP response validation, or generic JSON decoding because those
 responsibilities belong to `CoreNetworking`.
 
-### Running Tests
+### Test Plan
 
-The repository contains:
+The repository includes an Xcode Test Plan.
+
+Before bootstrap:
 
 ```text
-UnitTests.xctestplan
+ScalableIOSAppTemplate.xctestplan
 ```
 
-Run the configured test suite from Xcode with:
+After bootstrap, the test plan is automatically renamed together with the
+project.
+
+For example:
+
+```text
+Biologer.xctestplan
+```
+
+Run the configured tests with:
 
 ```text
 ⌘ + U
 ```
 
-When adding a new test target, also add it to `UnitTests.xctestplan`.
+When adding a new test target, also add it to the project's Test Plan.
 
 ---
 
@@ -802,6 +952,7 @@ Push Notifications
 Location
 Database
 Feature Flags
+Deep Links
 ```
 
 A future application may introduce:
@@ -822,10 +973,20 @@ future requirements.
 
 ### CoreDomain
 
-Contains small domain primitives that are genuinely shared across multiple
+Contains domain primitives that are genuinely shared across multiple
 features.
 
 Do not use `CoreDomain` as a generic model dump.
+
+If a substantial shared business concept emerges, consider creating a
+dedicated domain module such as:
+
+```text
+UserDomain
+SessionDomain
+```
+
+instead.
 
 ### CoreUI
 
@@ -876,8 +1037,41 @@ Application
 ```
 
 More advanced topics such as shared domain models, cross-feature navigation,
-session state, package scaling, and application-level flow are documented in
-[Documentation/Architecture.md](Documentation/Architecture.md).
+session state, package scaling, and application-level flow are documented in:
+
+[Documentation/Architecture.md](Documentation/Architecture.md)
+
+---
+
+## Cross-Feature Navigation
+
+Features should not navigate directly into other features.
+
+Avoid:
+
+```text
+ProfileFeature
+    ↓
+AuthenticationFeature
+```
+
+Instead, a feature should expose an event or update application-level state:
+
+```text
+Profile
+    ↓
+Logout requested
+    ↓
+Application / Session state
+    ↓
+Root navigation
+    ↓
+Authentication flow
+```
+
+Root-level navigation belongs to the Application layer.
+
+This prevents feature-to-feature dependency cycles.
 
 ---
 
@@ -898,6 +1092,47 @@ The architecture should evolve with application requirements.
 
 Do not add layers, protocols, packages, or services only because they may be
 useful someday.
+
+---
+
+## Recommended Workflow
+
+For a new project:
+
+```text
+Use this template
+        ↓
+Create repository
+        ↓
+Clone repository
+        ↓
+./Scripts/bootstrap.sh
+        ↓
+Open generated .xcodeproj
+        ↓
+Configure Development Team if required
+        ↓
+Review local secrets
+        ↓
+Build
+        ↓
+Run
+        ↓
+Tests
+        ↓
+Start implementing features
+```
+
+The template should remain a starting point, not a framework that every
+application is forced to adopt completely.
+
+---
+
+## Documentation
+
+For a detailed architecture description, see:
+
+[Documentation/Architecture.md](Documentation/Architecture.md)
 
 ---
 
