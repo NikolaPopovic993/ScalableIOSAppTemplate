@@ -1,44 +1,227 @@
 // swift-tools-version: 6.3
-// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
+
+// MARK: - Feature Configuration
+
+struct FeatureConfiguration {
+
+    let name: String
+    let usesNetworking: Bool
+    let hasTests: Bool
+
+    var domainTargetName: String {
+        "\(name)Domain"
+    }
+
+    var dataTargetName: String {
+        "\(name)Data"
+    }
+
+    var interfaceTargetName: String {
+        "\(name)Interface"
+    }
+
+    var assemblyTargetName: String {
+        "\(name)Assembly"
+    }
+
+    var domainTestsTargetName: String {
+        "\(name)DomainTests"
+    }
+
+    var dataTestsTargetName: String {
+        "\(name)DataTests"
+    }
+
+    var products: [Product] {
+        [
+            .library(
+                name: domainTargetName,
+                targets: [
+                    domainTargetName
+                ]
+            ),
+
+            .library(
+                name: dataTargetName,
+                targets: [
+                    dataTargetName
+                ]
+            ),
+
+            .library(
+                name: interfaceTargetName,
+                targets: [
+                    interfaceTargetName
+                ]
+            ),
+
+            .library(
+                name: assemblyTargetName,
+                targets: [
+                    assemblyTargetName
+                ]
+            )
+        ]
+    }
+
+    var targets: [Target] {
+        var targets: [Target] = [
+            makeDomainTarget(),
+            makeDataTarget(),
+            makeInterfaceTarget(),
+            makeAssemblyTarget()
+        ]
+
+        if hasTests {
+            targets.append(makeDomainTestsTarget())
+            targets.append(makeDataTestsTarget())
+        }
+
+        return targets
+    }
+
+    private func makeDomainTarget() -> Target {
+        .target(
+            name: domainTargetName,
+            path: "Sources/\(name)/Domain"
+        )
+    }
+
+    private func makeDataTarget() -> Target {
+        var dependencies: [Target.Dependency] = [
+            .target(
+                name: domainTargetName
+            )
+        ]
+
+        if usesNetworking {
+            dependencies.append(
+                .product(
+                    name: "CoreNetworking",
+                    package: "CoreNetworking"
+                )
+            )
+        }
+
+        return .target(
+            name: dataTargetName,
+            dependencies: dependencies,
+            path: "Sources/\(name)/Data"
+        )
+    }
+
+    private func makeInterfaceTarget() -> Target {
+        .target(
+            name: interfaceTargetName,
+            dependencies: [
+                .target(
+                    name: domainTargetName
+                ),
+
+                .product(
+                    name: "SharedUI",
+                    package: "SharedPackage"
+                )
+            ],
+            path: "Sources/\(name)/Interface"
+        )
+    }
+
+    private func makeAssemblyTarget() -> Target {
+        var dependencies: [Target.Dependency] = [
+            .target(
+                name: domainTargetName
+            ),
+
+            .target(
+                name: dataTargetName
+            ),
+
+            .target(
+                name: interfaceTargetName
+            )
+        ]
+
+        if usesNetworking {
+            dependencies.append(
+                .product(
+                    name: "CoreNetworking",
+                    package: "CoreNetworking"
+                )
+            )
+        }
+
+        return .target(
+            name: assemblyTargetName,
+            dependencies: dependencies,
+            path: "Sources/\(name)/Assembly"
+        )
+    }
+
+    private func makeDomainTestsTarget() -> Target {
+        .testTarget(
+            name: domainTestsTargetName,
+            dependencies: [
+                .target(
+                    name: domainTargetName
+                )
+            ],
+            path: "Tests/\(name)/DomainTests"
+        )
+    }
+
+    private func makeDataTestsTarget() -> Target {
+        var dependencies: [Target.Dependency] = [
+            .target(
+                name: domainTargetName
+            ),
+
+            .target(
+                name: dataTargetName
+            )
+        ]
+
+        if usesNetworking {
+            dependencies.append(
+                .product(
+                    name: "CoreNetworking",
+                    package: "CoreNetworking"
+                )
+            )
+        }
+
+        return .testTarget(
+            name: dataTestsTargetName,
+            dependencies: dependencies,
+            path: "Tests/\(name)/DataTests"
+        )
+    }
+}
+
+
+// MARK: - Features
+
+let features: [FeatureConfiguration] = [
+    FeatureConfiguration(
+        name: "Authentication",
+        usesNetworking: true,
+        hasTests: true
+    )
+
+    // FEATURE_GENERATOR_FEATURES
+]
+
+
+// MARK: - Package
 
 let package = Package(
     name: "FeaturesPackage",
     platforms: [
         .iOS(.v17)
     ],
-    products: [
-        .library(
-            name: "AuthenticationDomain",
-            targets: [
-                "AuthenticationDomain"
-            ]
-        ),
-
-        .library(
-            name: "AuthenticationData",
-            targets: [
-                "AuthenticationData"
-            ]
-        ),
-
-        .library(
-            name: "AuthenticationInterface",
-            targets: [
-                "AuthenticationInterface"
-            ]
-        ),
-
-        .library(
-            name: "AuthenticationAssembly",
-            targets: [
-                "AuthenticationAssembly"
-            ]
-        ),
-
-        // FEATURE_GENERATOR_PRODUCTS
-    ],
+    products: features.flatMap(\.products),
     dependencies: [
         .package(
             path: "../SharedPackage"
@@ -49,77 +232,5 @@ let package = Package(
             from: "2.0.0"
         )
     ],
-    targets: [
-        .target(
-            name: "AuthenticationDomain",
-            path: "Sources/Authentication/Domain"
-        ),
-
-        .target(
-            name: "AuthenticationData",
-            dependencies: [
-                "AuthenticationDomain",
-
-                .product(
-                    name: "CoreNetworking",
-                    package: "CoreNetworking"
-                )
-            ],
-            path: "Sources/Authentication/Data"
-        ),
-
-        .target(
-            name: "AuthenticationInterface",
-            dependencies: [
-                "AuthenticationDomain",
-
-                .product(
-                    name: "SharedUI",
-                    package: "SharedPackage"
-                )
-            ],
-            path: "Sources/Authentication/Interface"
-        ),
-
-        .target(
-            name: "AuthenticationAssembly",
-            dependencies: [
-                "AuthenticationDomain",
-                "AuthenticationData",
-                "AuthenticationInterface",
-
-                .product(
-                    name: "CoreNetworking",
-                    package: "CoreNetworking"
-                )
-            ],
-            path: "Sources/Authentication/Assembly"
-        ),
-
-        // FEATURE_GENERATOR_TARGETS
-
-        .testTarget(
-            name: "AuthenticationDomainTests",
-            dependencies: [
-                "AuthenticationDomain"
-            ],
-            path: "Tests/Authentication/DomainTests"
-        ),
-
-        .testTarget(
-            name: "AuthenticationDataTests",
-            dependencies: [
-                "AuthenticationDomain",
-                "AuthenticationData",
-
-                .product(
-                    name: "CoreNetworking",
-                    package: "CoreNetworking"
-                )
-            ],
-            path: "Tests/Authentication/DataTests"
-        ),
-
-        // FEATURE_GENERATOR_TEST_TARGETS
-    ]
+    targets: features.flatMap(\.targets)
 )
