@@ -3,21 +3,26 @@
 set -e
 
 # ---------------------------------------------------------
-# Scalable iOS App Template Setup
+# Application Configuration
 # ---------------------------------------------------------
 #
-# Configures the application-specific values used by the
-# template without modifying the Xcode project file.
+# Configures application-facing values through .xcconfig.
 #
-# The script updates:
+# Can be used interactively:
 #
-# - App display name
-# - Bundle identifier
-# - API scheme
-# - API host
-# - Local secrets configuration
+#   ./Scripts/setup.sh
+#
+# Or non-interactively:
+#
+#   ./Scripts/setup.sh \
+#       --display-name "My Awesome App" \
+#       --bundle-id "com.company.myawesomeapp" \
+#       --api-scheme "https" \
+#       --api-host "api.example.com" \
+#       --yes
 #
 # ---------------------------------------------------------
+
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -28,13 +33,19 @@ SHARED_CONFIG="$CONFIG_DIR/Shared.xcconfig"
 SECRETS_EXAMPLE="$CONFIG_DIR/Secrets.example.xcconfig"
 SECRETS_CONFIG="$CONFIG_DIR/Secrets.xcconfig"
 
+DISPLAY_NAME=""
+BUNDLE_ID=""
+API_SCHEME=""
+API_HOST=""
+AUTO_CONFIRM=false
+
 
 # MARK: - Helpers
 
 print_header() {
     echo ""
     echo "========================================"
-    echo "  Scalable iOS App Template Setup"
+    echo "  Application Setup"
     echo "========================================"
     echo ""
 }
@@ -48,34 +59,99 @@ fail() {
 }
 
 
-replace_config_value() {
-
-    local file="$1"
-    local key="$2"
-    local value="$3"
-
-    if grep -q "^${key} =" "$file"; then
-
-        sed -i '' \
-            "s|^${key} =.*|${key} = ${value}|" \
-            "$file"
-
-    else
-
-        echo "${key} = ${value}" >> "$file"
-
-    fi
+print_usage() {
+    echo ""
+    echo "Usage:"
+    echo ""
+    echo "  Interactive:"
+    echo ""
+    echo "    ./Scripts/setup.sh"
+    echo ""
+    echo "  With arguments:"
+    echo ""
+    echo "    ./Scripts/setup.sh \\"
+    echo "        --display-name \"My Awesome App\" \\"
+    echo "        --bundle-id \"com.company.myawesomeapp\" \\"
+    echo "        --api-scheme \"https\" \\"
+    echo "        --api-host \"api.example.com\" \\"
+    echo "        --yes"
+    echo ""
 }
 
 
 validate_required_file() {
-
     local file="$1"
 
     if [[ ! -f "$file" ]]; then
         fail "Required file not found: $file"
     fi
 }
+
+
+replace_config_value() {
+    local file="$1"
+    local key="$2"
+    local value="$3"
+
+    if grep -q "^${key} =" "$file"; then
+        sed -i '' \
+            "s|^${key} =.*|${key} = ${value}|" \
+            "$file"
+    else
+        echo "${key} = ${value}" >> "$file"
+    fi
+}
+
+
+# MARK: - Arguments
+
+while [[ $# -gt 0 ]]; do
+
+    case "$1" in
+
+        --display-name)
+            [[ $# -ge 2 ]] || fail "Missing value for --display-name."
+            DISPLAY_NAME="$2"
+            shift 2
+            ;;
+
+        --bundle-id)
+            [[ $# -ge 2 ]] || fail "Missing value for --bundle-id."
+            BUNDLE_ID="$2"
+            shift 2
+            ;;
+
+        --api-scheme)
+            [[ $# -ge 2 ]] || fail "Missing value for --api-scheme."
+            API_SCHEME="$2"
+            shift 2
+            ;;
+
+        --api-host)
+            [[ $# -ge 2 ]] || fail "Missing value for --api-host."
+            API_HOST="$2"
+            shift 2
+            ;;
+
+        --yes)
+            AUTO_CONFIRM=true
+            shift
+            ;;
+
+        --help|-h)
+            print_usage
+            exit 0
+            ;;
+
+        *)
+            fail "Unknown argument: $1
+
+Run ./Scripts/setup.sh --help for usage."
+            ;;
+
+    esac
+
+done
 
 
 # MARK: - Validation
@@ -88,31 +164,41 @@ validate_required_file "$SECRETS_EXAMPLE"
 
 print_header
 
-echo "Enter the configuration for your application."
-echo ""
 
-read -r -p "App display name: " APP_NAME
+if [[ -z "$DISPLAY_NAME" ]]; then
 
-while [[ -z "$APP_NAME" ]]; do
-    echo "App display name cannot be empty."
-    read -r -p "App display name: " APP_NAME
-done
+    read -r -p "App display name: " DISPLAY_NAME
+
+    while [[ -z "$DISPLAY_NAME" ]]; do
+        echo "App display name cannot be empty."
+        read -r -p "App display name: " DISPLAY_NAME
+    done
+
+fi
 
 
-read -r -p "Bundle identifier: " BUNDLE_ID
+if [[ -z "$BUNDLE_ID" ]]; then
 
-while [[ -z "$BUNDLE_ID" ]]; do
-    echo "Bundle identifier cannot be empty."
     read -r -p "Bundle identifier: " BUNDLE_ID
-done
+
+    while [[ -z "$BUNDLE_ID" ]]; do
+        echo "Bundle identifier cannot be empty."
+        read -r -p "Bundle identifier: " BUNDLE_ID
+    done
+
+fi
 
 
-read -r -p "API scheme [https]: " API_SCHEME
+if [[ -z "$API_SCHEME" ]]; then
+    read -r -p "API scheme [https]: " API_SCHEME
+fi
 
 API_SCHEME="${API_SCHEME:-https}"
 
 
-read -r -p "API host [dummyjson.com]: " API_HOST
+if [[ -z "$API_HOST" ]]; then
+    read -r -p "API host [dummyjson.com]: " API_HOST
+fi
 
 API_HOST="${API_HOST:-dummyjson.com}"
 
@@ -122,21 +208,27 @@ API_HOST="${API_HOST:-dummyjson.com}"
 echo ""
 echo "Configuration"
 echo "----------------------------------------"
-echo "App name:   $APP_NAME"
-echo "Bundle ID:  $BUNDLE_ID"
-echo "API:        $API_SCHEME://$API_HOST"
+echo "Display name: $DISPLAY_NAME"
+echo "Bundle ID:    $BUNDLE_ID"
+echo "API:          $API_SCHEME://$API_HOST"
 echo ""
 
 
-read -r -p "Apply this configuration? [Y/n]: " CONFIRM
+# MARK: - Confirmation
 
-CONFIRM="${CONFIRM:-Y}"
+if [[ "$AUTO_CONFIRM" != true ]]; then
 
-if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
-    echo ""
-    echo "Setup cancelled."
-    echo ""
-    exit 0
+    read -r -p "Apply this configuration? [Y/n]: " CONFIRM
+
+    CONFIRM="${CONFIRM:-Y}"
+
+    if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+        echo ""
+        echo "Setup cancelled."
+        echo ""
+        exit 0
+    fi
+
 fi
 
 
@@ -145,7 +237,7 @@ fi
 replace_config_value \
     "$SHARED_CONFIG" \
     "APP_DISPLAY_NAME" \
-    "$APP_NAME"
+    "$DISPLAY_NAME"
 
 replace_config_value \
     "$SHARED_CONFIG" \
@@ -184,6 +276,24 @@ else
 fi
 
 
+# MARK: - Detect Project
+
+PROJECT_FILE="$(
+    find "$ROOT_DIR" \
+        -maxdepth 1 \
+        -type d \
+        -name "*.xcodeproj" \
+        -print \
+        -quit
+)"
+
+if [[ -n "$PROJECT_FILE" ]]; then
+    PROJECT_NAME="$(basename "$PROJECT_FILE")"
+else
+    PROJECT_NAME="<project>.xcodeproj"
+fi
+
+
 # MARK: - Finished
 
 echo ""
@@ -191,15 +301,19 @@ echo "========================================"
 echo "  ✅ Setup completed successfully"
 echo "========================================"
 echo ""
-echo "App:       $APP_NAME"
-echo "Bundle ID: $BUNDLE_ID"
-echo "API:       $API_SCHEME://$API_HOST"
+echo "Display name: $DISPLAY_NAME"
+echo "Bundle ID:    $BUNDLE_ID"
+echo "API:          $API_SCHEME://$API_HOST"
 echo ""
 echo "Next steps:"
 echo ""
 echo "1. Review Config/Secrets.xcconfig"
-echo "2. Open ScalableIOSAppTemplate.xcodeproj"
-echo "3. Select your development team if required"
+echo ""
+echo "2. Open:"
+echo ""
+echo "   $PROJECT_NAME"
+echo ""
+echo "3. Select your Development Team if required"
 echo "4. Build and run the application"
-echo "5. Run UnitTests.xctestplan"
+echo "5. Run the configured test plan"
 echo ""
