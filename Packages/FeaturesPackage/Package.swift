@@ -35,7 +35,9 @@ let package = Package(
             targets: [
                 "AuthenticationAssembly"
             ]
-        )
+        ),
+        
+        // FEATURE_GENERATOR_PRODUCTS
     ],
     dependencies: [
         .package(
@@ -90,6 +92,8 @@ let package = Package(
             ]
         ),
 
+        // FEATURE_GENERATOR_TARGETS
+        
         .testTarget(
             name: "AuthenticationDomainTests",
             dependencies: [
@@ -108,6 +112,8 @@ let package = Package(
                     package: "CoreNetworking"
                 )
             ]
-        )
+        ),
+        
+        // FEATURE_GENERATOR_TEST_TARGETS
     ]
 )
