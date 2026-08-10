@@ -1,0 +1,336 @@
+#!/bin/bash
+
+set -e
+
+# ---------------------------------------------------------
+# Scalable iOS App Template - Project Rename
+# ---------------------------------------------------------
+#
+# Renames the technical Xcode project structure.
+#
+# This script is intended to be executed immediately after
+# creating a new repository from the GitHub template and
+# before running setup.sh.
+#
+# It renames:
+#
+# - Xcode project
+# - Application target references
+# - Scheme references
+# - Application source directory
+# - App entry file/type
+# - Unit test target references
+# - UI test target references
+#
+# It does NOT change:
+#
+# - App display name
+# - Bundle identifier
+# - API configuration
+# - Secrets
+#
+# Those values are configured through setup.sh.
+#
+# ---------------------------------------------------------
+
+
+OLD_NAME="ScalableIOSAppTemplate"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+cd "$ROOT_DIR"
+
+
+# MARK: - Helpers
+
+print_header() {
+    echo ""
+    echo "========================================"
+    echo "  Scalable iOS App Template Rename"
+    echo "========================================"
+    echo ""
+}
+
+
+fail() {
+    echo ""
+    echo "❌ $1"
+    echo ""
+    exit 1
+}
+
+
+rename_if_exists() {
+
+    local source="$1"
+    local destination="$2"
+
+    if [[ ! -e "$source" ]]; then
+        return
+    fi
+
+    if [[ -e "$destination" ]]; then
+        fail "Cannot rename '$source' because '$destination' already exists."
+    fi
+
+    mv "$source" "$destination"
+
+    echo "Renamed:"
+    echo "  $source"
+    echo "  → $destination"
+}
+
+
+replace_project_name_in_tracked_files() {
+
+    echo ""
+    echo "Updating project references..."
+    echo ""
+
+    git grep -Il "$OLD_NAME" -- . | while IFS= read -r file
+    do
+
+        # Do not modify this script itself.
+        if [[ "$file" == "Scripts/rename_project.sh" ]]; then
+            continue
+        fi
+
+        sed -i '' \
+            "s/${OLD_NAME}/${NEW_NAME}/g" \
+            "$file"
+
+        echo "Updated: $file"
+
+    done
+}
+
+
+# MARK: - Validation
+
+print_header
+
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    fail "This script must be executed inside a Git repository."
+fi
+
+
+if [[ ! -d "${OLD_NAME}.xcodeproj" ]]; then
+    fail "Expected project '${OLD_NAME}.xcodeproj' was not found."
+fi
+
+
+if [[ -n "$(git status --porcelain)" ]]; then
+
+    fail "The Git working tree must be clean before renaming the project.
+
+Commit or discard existing changes first.
+
+Recommended order:
+
+1. Create repository from template
+2. Run ./Scripts/rename_project.sh
+3. Run ./Scripts/setup.sh"
+
+fi
+
+
+# MARK: - Input
+
+echo "This script performs a technical rename of the Xcode project."
+echo ""
+echo "Current project:"
+echo "  $OLD_NAME"
+echo ""
+
+read -r -p "New project name (for example MyAwesomeApp): " NEW_NAME
+
+
+if [[ -z "$NEW_NAME" ]]; then
+    fail "Project name cannot be empty."
+fi
+
+
+if [[ "$NEW_NAME" == "$OLD_NAME" ]]; then
+    fail "The new project name must be different from '$OLD_NAME'."
+fi
+
+
+if [[ ! "$NEW_NAME" =~ ^[A-Za-z][A-Za-z0-9]*$ ]]; then
+
+    fail "Invalid project name.
+
+Use a technical project name containing only letters and numbers.
+
+Examples:
+
+MyAwesomeApp
+Biologer
+BankingApp
+
+Do not use spaces, hyphens, or special characters."
+
+fi
+
+
+# MARK: - Confirmation
+
+echo ""
+echo "Rename summary"
+echo "----------------------------------------"
+echo "Current name: $OLD_NAME"
+echo "New name:     $NEW_NAME"
+echo ""
+echo "This will rename technical project identifiers."
+echo ""
+echo "Application display name and bundle identifier"
+echo "will NOT be changed by this script."
+echo ""
+
+read -r -p "Continue? [Y/n]: " CONFIRM
+
+CONFIRM="${CONFIRM:-Y}"
+
+
+if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "Rename cancelled."
+    echo ""
+    exit 0
+fi
+
+
+# MARK: - Replace References
+
+replace_project_name_in_tracked_files
+
+
+# MARK: - Rename Top-Level Directories
+
+echo ""
+echo "Renaming project structure..."
+echo ""
+
+rename_if_exists \
+    "${OLD_NAME}.xcodeproj" \
+    "${NEW_NAME}.xcodeproj"
+
+rename_if_exists \
+    "$OLD_NAME" \
+    "$NEW_NAME"
+
+rename_if_exists \
+    "${OLD_NAME}Tests" \
+    "${NEW_NAME}Tests"
+
+rename_if_exists \
+    "${OLD_NAME}UITests" \
+    "${NEW_NAME}UITests"
+
+
+# MARK: - Rename Scheme
+
+rename_if_exists \
+    "${NEW_NAME}.xcodeproj/xcshareddata/xcschemes/${OLD_NAME}.xcscheme" \
+    "${NEW_NAME}.xcodeproj/xcshareddata/xcschemes/${NEW_NAME}.xcscheme"
+
+
+# MARK: - Rename App Entry
+
+rename_if_exists \
+    "${NEW_NAME}/App/AppEntry/${OLD_NAME}App.swift" \
+    "${NEW_NAME}/App/AppEntry/${NEW_NAME}App.swift"
+
+
+# MARK: - Rename Test Files
+
+rename_if_exists \
+    "${NEW_NAME}Tests/${OLD_NAME}Tests.swift" \
+    "${NEW_NAME}Tests/${NEW_NAME}Tests.swift"
+
+rename_if_exists \
+    "${NEW_NAME}UITests/${OLD_NAME}UITests.swift" \
+    "${NEW_NAME}UITests/${NEW_NAME}UITests.swift"
+
+rename_if_exists \
+    "${NEW_NAME}UITests/${OLD_NAME}UITestsLaunchTests.swift" \
+    "${NEW_NAME}UITests/${NEW_NAME}UITestsLaunchTests.swift"
+
+
+# MARK: - Verification
+
+echo ""
+echo "Checking for remaining project-name references..."
+echo ""
+
+REMAINING_REFERENCES="$(
+    git grep -n "$OLD_NAME" -- . \
+        ':!Scripts/rename_project.sh' \
+        2>/dev/null || true
+)"
+
+
+REMAINING_PATHS="$(
+    find . \
+        -path "./.git" -prune -o \
+        -name "*${OLD_NAME}*" \
+        -print
+)"
+
+
+if [[ -n "$REMAINING_REFERENCES" ]]; then
+
+    echo "⚠️ Some textual references still contain '$OLD_NAME':"
+    echo ""
+    echo "$REMAINING_REFERENCES"
+    echo ""
+
+else
+
+    echo "✓ No remaining textual project references found."
+
+fi
+
+
+if [[ -n "$REMAINING_PATHS" ]]; then
+
+    echo ""
+    echo "⚠️ Some paths still contain '$OLD_NAME':"
+    echo ""
+    echo "$REMAINING_PATHS"
+    echo ""
+
+else
+
+    echo "✓ No remaining project paths found."
+
+fi
+
+
+# MARK: - Finished
+
+echo ""
+echo "========================================"
+echo "  ✅ Project rename completed"
+echo "========================================"
+echo ""
+echo "Old project: $OLD_NAME"
+echo "New project: $NEW_NAME"
+echo ""
+echo "Next steps:"
+echo ""
+echo "1. Review the changes with:"
+echo ""
+echo "   git status"
+echo ""
+echo "2. Configure the application with:"
+echo ""
+echo "   ./Scripts/setup.sh"
+echo ""
+echo "3. Open:"
+echo ""
+echo "   ${NEW_NAME}.xcodeproj"
+echo ""
+echo "4. Build the application"
+echo "5. Run UnitTests.xctestplan"
+echo ""
