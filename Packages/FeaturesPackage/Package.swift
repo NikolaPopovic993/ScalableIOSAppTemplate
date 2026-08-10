@@ -11,6 +11,31 @@ struct FeatureConfiguration {
     let usesSharedUI: Bool
     let hasTests: Bool
 
+    let domainDependencies: [Target.Dependency]
+    let dataDependencies: [Target.Dependency]
+    let interfaceDependencies: [Target.Dependency]
+    let assemblyDependencies: [Target.Dependency]
+
+    init(
+        name: String,
+        usesNetworking: Bool,
+        usesSharedUI: Bool,
+        hasTests: Bool,
+        domainDependencies: [Target.Dependency] = [],
+        dataDependencies: [Target.Dependency] = [],
+        interfaceDependencies: [Target.Dependency] = [],
+        assemblyDependencies: [Target.Dependency] = []
+    ) {
+        self.name = name
+        self.usesNetworking = usesNetworking
+        self.usesSharedUI = usesSharedUI
+        self.hasTests = hasTests
+        self.domainDependencies = domainDependencies
+        self.dataDependencies = dataDependencies
+        self.interfaceDependencies = interfaceDependencies
+        self.assemblyDependencies = assemblyDependencies
+    }
+
     var domainTargetName: String {
         "\(name)Domain"
     }
@@ -86,6 +111,7 @@ struct FeatureConfiguration {
     private func makeDomainTarget() -> Target {
         .target(
             name: domainTargetName,
+            dependencies: domainDependencies,
             path: "Sources/\(name)/Domain"
         )
     }
@@ -96,6 +122,8 @@ struct FeatureConfiguration {
                 name: domainTargetName
             )
         ]
+
+        dependencies.append(contentsOf: dataDependencies)
 
         if usesNetworking {
             dependencies.append(
@@ -119,6 +147,8 @@ struct FeatureConfiguration {
                 name: domainTargetName
             )
         ]
+
+        dependencies.append(contentsOf: interfaceDependencies)
 
         if usesSharedUI {
             dependencies.append(
@@ -150,6 +180,8 @@ struct FeatureConfiguration {
                 name: interfaceTargetName
             )
         ]
+
+        dependencies.append(contentsOf: assemblyDependencies)
 
         if usesNetworking {
             dependencies.append(
