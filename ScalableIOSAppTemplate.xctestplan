@@ -14,13 +14,6 @@
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:Packages\/CorePackage",
-        "identifier" : "CoreUtilitiesTests",
-        "name" : "CoreUtilitiesTests"
-      }
-    },
-    {
-      "target" : {
         "containerPath" : "container:ScalableIOSAppTemplate.xcodeproj",
         "identifier" : "9E0928143025FE0200FE4DE3",
         "name" : "ScalableIOSAppTemplateTests"

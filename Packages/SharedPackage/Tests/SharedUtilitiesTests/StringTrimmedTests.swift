@@ -7,7 +7,7 @@
 
 import Testing
 
-@testable import CoreUtilities
+@testable import SharedUtilities
 
 struct StringTrimmedTests {
 

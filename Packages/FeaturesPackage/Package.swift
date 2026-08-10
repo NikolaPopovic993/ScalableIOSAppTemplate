@@ -72,7 +72,7 @@ let package = Package(
                 "AuthenticationDomain",
 
                 .product(
-                    name: "CoreUI",
+                    name: "SharedUI",
                     package: "SharedPackage"
                 )
             ]
