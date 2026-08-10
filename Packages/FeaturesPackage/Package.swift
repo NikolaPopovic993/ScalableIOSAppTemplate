@@ -95,6 +95,19 @@ let package = Package(
             dependencies: [
                 "AuthenticationDomain"
             ]
+        ),
+        
+        .testTarget(
+            name: "AuthenticationDataTests",
+            dependencies: [
+                "AuthenticationDomain",
+                "AuthenticationData",
+
+                .product(
+                    name: "CoreNetworking",
+                    package: "CoreNetworking"
+                )
+            ]
         )
     ]
 )
