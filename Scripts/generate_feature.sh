@@ -6,7 +6,24 @@ set -e
 # Scalable iOS App Template - Feature Generator
 # ---------------------------------------------------------
 #
-# Generates a new modular feature inside FeaturesPackage.
+# Generates a new feature inside FeaturesPackage.
+#
+# The generated feature follows the structure:
+#
+#   Sources/<Feature>/
+#   ├── Domain/
+#   ├── Data/
+#   ├── Interface/
+#   └── Assembly/
+#
+# Optional tests:
+#
+#   Tests/<Feature>/
+#   ├── DomainTests/
+#   └── DataTests/
+#
+# The generator also registers the feature through the
+# FeatureConfiguration manifest in Package.swift.
 #
 # Interactive usage:
 #
@@ -20,18 +37,6 @@ set -e
 #       --tests \
 #       --yes
 #
-# Generated modules:
-#
-#   FeatureDomain
-#   FeatureData
-#   FeatureInterface
-#   FeatureAssembly
-#
-# Optional tests:
-#
-#   FeatureDomainTests
-#   FeatureDataTests
-#
 # ---------------------------------------------------------
 
 
@@ -40,12 +45,11 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 FEATURES_PACKAGE_DIR="$ROOT_DIR/Packages/FeaturesPackage"
 PACKAGE_MANIFEST="$FEATURES_PACKAGE_DIR/Package.swift"
+
 SOURCES_DIR="$FEATURES_PACKAGE_DIR/Sources"
 TESTS_DIR="$FEATURES_PACKAGE_DIR/Tests"
 
-PRODUCTS_MARKER="// FEATURE_GENERATOR_PRODUCTS"
-TARGETS_MARKER="// FEATURE_GENERATOR_TARGETS"
-TEST_TARGETS_MARKER="// FEATURE_GENERATOR_TEST_TARGETS"
+FEATURE_MARKER="// FEATURE_GENERATOR_FEATURES"
 
 FEATURE_NAME=""
 USES_NETWORKING=""
@@ -90,13 +94,13 @@ print_usage() {
     echo ""
     echo "Options:"
     echo ""
-    echo "    --name <name>       Feature name"
-    echo "    --networking        Add CoreNetworking dependency"
-    echo "    --no-networking     Do not add CoreNetworking"
-    echo "    --tests             Generate Domain/Data test targets"
-    echo "    --no-tests          Do not generate test targets"
+    echo "    --name <name>       Feature name in PascalCase"
+    echo "    --networking        Enable CoreNetworking"
+    echo "    --no-networking     Do not use CoreNetworking"
+    echo "    --tests             Generate Domain and Data tests"
+    echo "    --no-tests          Do not generate tests"
     echo "    --yes               Skip confirmation"
-    echo "    --help, -h          Show help"
+    echo "    --help, -h          Show this help"
     echo ""
 }
 
@@ -109,49 +113,6 @@ validate_required_file() {
 
 $file"
     fi
-}
-
-
-validate_marker() {
-    local marker="$1"
-
-    if ! grep -Fq "$marker" "$PACKAGE_MANIFEST"; then
-        fail "Required Package.swift marker was not found:
-
-$marker"
-    fi
-}
-
-
-insert_before_marker() {
-    local file="$1"
-    local marker="$2"
-    local content="$3"
-
-    local temp_file
-    temp_file="$(mktemp "${file}.XXXXXX")"
-
-    local marker_found=false
-
-    while IFS= read -r line || [[ -n "$line" ]]; do
-
-        if [[ "$line" == *"$marker"* ]]; then
-            printf '%s\n' "$content" >> "$temp_file"
-            marker_found=true
-        fi
-
-        printf '%s\n' "$line" >> "$temp_file"
-
-    done < "$file"
-
-    if [[ "$marker_found" != true ]]; then
-        rm -f "$temp_file"
-        fail "Could not find marker:
-
-$marker"
-    fi
-
-    mv "$temp_file" "$file"
 }
 
 
@@ -177,16 +138,50 @@ ask_yes_no() {
 }
 
 
-recovery_help() {
+insert_before_marker() {
+    local file="$1"
+    local marker="$2"
+    local content="$3"
+
+    local temp_file
+    temp_file="$(mktemp "${file}.XXXXXX")"
+
+    local marker_found=false
+
+    while IFS= read -r line || [[ -n "$line" ]]; do
+
+        if [[ "$line" == *"$marker"* ]]; then
+            printf '%s\n' "$content" >> "$temp_file"
+            printf '\n' >> "$temp_file"
+            marker_found=true
+        fi
+
+        printf '%s\n' "$line" >> "$temp_file"
+
+    done < "$file"
+
+    if [[ "$marker_found" != true ]]; then
+        rm -f "$temp_file"
+
+        fail "Could not find feature generator marker:
+
+$marker"
+    fi
+
+    mv "$temp_file" "$file"
+}
+
+
+print_recovery_help() {
     echo ""
     echo "Feature generation did not complete successfully."
     echo ""
-    echo "Review changes with:"
+    echo "Review generated changes with:"
     echo ""
     echo "  git status"
     echo ""
-    echo "Because generation requires a clean working tree,"
-    echo "you can restore the previous state with:"
+    echo "Because the generator requires a clean working tree,"
+    echo "the generated changes can be discarded with:"
     echo ""
     echo "  git reset --hard HEAD"
     echo "  git clean -fd"
@@ -195,7 +190,7 @@ recovery_help() {
 
 
 on_error() {
-    recovery_help
+    print_recovery_help
 }
 
 trap on_error ERR
@@ -260,9 +255,16 @@ print_header
 
 validate_required_file "$PACKAGE_MANIFEST"
 
-validate_marker "$PRODUCTS_MARKER"
-validate_marker "$TARGETS_MARKER"
-validate_marker "$TEST_TARGETS_MARKER"
+
+if ! grep -Fq "$FEATURE_MARKER" "$PACKAGE_MANIFEST"; then
+    fail "Feature generator marker was not found in:
+
+Packages/FeaturesPackage/Package.swift
+
+Expected marker:
+
+$FEATURE_MARKER"
+fi
 
 
 if ! git -C "$ROOT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -278,6 +280,19 @@ if [[ -n "$(git status --porcelain)" ]]; then
 
 Commit or stash existing changes first."
 fi
+
+
+# MARK: - Validate Existing Manifest
+
+echo "Validating FeaturesPackage manifest..."
+
+swift package \
+    --package-path "$FEATURES_PACKAGE_DIR" \
+    dump-package \
+    >/dev/null
+
+echo "✓ Existing package manifest is valid."
+echo ""
 
 
 # MARK: - Feature Name
@@ -309,21 +324,30 @@ fi
 
 # MARK: - Duplicate Validation
 
-if grep -Fq "\"${FEATURE_NAME}Domain\"" "$PACKAGE_MANIFEST"; then
-    fail "Feature '$FEATURE_NAME' already appears to exist in Package.swift."
+if grep -Fq "name: \"$FEATURE_NAME\"" "$PACKAGE_MANIFEST"; then
+    fail "Feature '$FEATURE_NAME' already exists in Package.swift."
 fi
 
 
-if [[ -e "$SOURCES_DIR/${FEATURE_NAME}Domain" ]] ||
-   [[ -e "$SOURCES_DIR/${FEATURE_NAME}Data" ]] ||
-   [[ -e "$SOURCES_DIR/${FEATURE_NAME}Interface" ]] ||
-   [[ -e "$SOURCES_DIR/${FEATURE_NAME}Assembly" ]]; then
+FEATURE_SOURCE_DIR="$SOURCES_DIR/$FEATURE_NAME"
+FEATURE_TESTS_DIR="$TESTS_DIR/$FEATURE_NAME"
 
-    fail "One or more source directories for '$FEATURE_NAME' already exist."
+
+if [[ -e "$FEATURE_SOURCE_DIR" ]]; then
+    fail "Feature source directory already exists:
+
+Sources/$FEATURE_NAME"
 fi
 
 
-# MARK: - Options
+if [[ -e "$FEATURE_TESTS_DIR" ]]; then
+    fail "Feature test directory already exists:
+
+Tests/$FEATURE_NAME"
+fi
+
+
+# MARK: - Feature Options
 
 if [[ -z "$USES_NETWORKING" ]]; then
     USES_NETWORKING="$(ask_yes_no "Use CoreNetworking?" true)"
@@ -344,6 +368,9 @@ echo ""
 echo "Feature:"
 echo "  $FEATURE_NAME"
 echo ""
+echo "Location:"
+echo "  Packages/FeaturesPackage"
+echo ""
 echo "Modules:"
 echo "  ${FEATURE_NAME}Domain"
 echo "  ${FEATURE_NAME}Data"
@@ -352,22 +379,47 @@ echo "  ${FEATURE_NAME}Assembly"
 echo ""
 
 if [[ "$CREATE_TESTS" == true ]]; then
+
     echo "Tests:"
     echo "  ${FEATURE_NAME}DomainTests"
     echo "  ${FEATURE_NAME}DataTests"
     echo ""
+
 else
+
     echo "Tests:"
     echo "  Disabled"
     echo ""
+
 fi
 
+
 if [[ "$USES_NETWORKING" == true ]]; then
+
     echo "CoreNetworking:"
     echo "  Enabled"
+
 else
+
     echo "CoreNetworking:"
     echo "  Disabled"
+
+fi
+
+echo ""
+echo "Structure:"
+echo ""
+echo "  Sources/$FEATURE_NAME/"
+echo "  ├── Domain/"
+echo "  ├── Data/"
+echo "  ├── Interface/"
+echo "  └── Assembly/"
+
+if [[ "$CREATE_TESTS" == true ]]; then
+    echo ""
+    echo "  Tests/$FEATURE_NAME/"
+    echo "  ├── DomainTests/"
+    echo "  └── DataTests/"
 fi
 
 echo ""
@@ -393,194 +445,43 @@ if [[ "$AUTO_CONFIRM" != true ]]; then
 fi
 
 
-# MARK: - Build Product Manifest Block
+# MARK: - Create Feature Structure
 
-PRODUCT_BLOCK="$(cat <<EOF
-        .library(
-            name: "${FEATURE_NAME}Domain",
-            targets: ["${FEATURE_NAME}Domain"]
-        ),
-        .library(
-            name: "${FEATURE_NAME}Data",
-            targets: ["${FEATURE_NAME}Data"]
-        ),
-        .library(
-            name: "${FEATURE_NAME}Interface",
-            targets: ["${FEATURE_NAME}Interface"]
-        ),
-        .library(
-            name: "${FEATURE_NAME}Assembly",
-            targets: ["${FEATURE_NAME}Assembly"]
-        ),
+echo ""
+echo "Creating feature structure..."
+echo ""
 
-EOF
-)"
+mkdir -p "$FEATURE_SOURCE_DIR/Domain"
+mkdir -p "$FEATURE_SOURCE_DIR/Data"
+mkdir -p "$FEATURE_SOURCE_DIR/Interface"
+mkdir -p "$FEATURE_SOURCE_DIR/Assembly"
 
-
-# MARK: - Build Source Target Manifest Block
-
-if [[ "$USES_NETWORKING" == true ]]; then
-
-    TARGET_BLOCK="$(cat <<EOF
-        .target(
-            name: "${FEATURE_NAME}Domain"
-        ),
-        .target(
-            name: "${FEATURE_NAME}Data",
-            dependencies: [
-                "${FEATURE_NAME}Domain",
-                .product(
-                    name: "CoreNetworking",
-                    package: "CoreNetworking"
-                )
-            ]
-        ),
-        .target(
-            name: "${FEATURE_NAME}Interface",
-            dependencies: [
-                "${FEATURE_NAME}Domain",
-                .product(
-                    name: "SharedUI",
-                    package: "CorePackage"
-                )
-            ]
-        ),
-        .target(
-            name: "${FEATURE_NAME}Assembly",
-            dependencies: [
-                "${FEATURE_NAME}Domain",
-                "${FEATURE_NAME}Data",
-                "${FEATURE_NAME}Interface",
-                .product(
-                    name: "CoreNetworking",
-                    package: "CoreNetworking"
-                )
-            ]
-        ),
-
-EOF
-)"
-
-else
-
-    TARGET_BLOCK="$(cat <<EOF
-        .target(
-            name: "${FEATURE_NAME}Domain"
-        ),
-        .target(
-            name: "${FEATURE_NAME}Data",
-            dependencies: [
-                "${FEATURE_NAME}Domain"
-            ]
-        ),
-        .target(
-            name: "${FEATURE_NAME}Interface",
-            dependencies: [
-                "${FEATURE_NAME}Domain",
-                .product(
-                    name: "SharedUI",
-                    package: "CorePackage"
-                )
-            ]
-        ),
-        .target(
-            name: "${FEATURE_NAME}Assembly",
-            dependencies: [
-                "${FEATURE_NAME}Domain",
-                "${FEATURE_NAME}Data",
-                "${FEATURE_NAME}Interface"
-            ]
-        ),
-
-EOF
-)"
-
-fi
-
-
-# MARK: - Build Test Manifest Block
-
-TEST_TARGET_BLOCK=""
 
 if [[ "$CREATE_TESTS" == true ]]; then
-
-    TEST_TARGET_BLOCK="$(cat <<EOF
-        .testTarget(
-            name: "${FEATURE_NAME}DomainTests",
-            dependencies: [
-                "${FEATURE_NAME}Domain"
-            ]
-        ),
-        .testTarget(
-            name: "${FEATURE_NAME}DataTests",
-            dependencies: [
-                "${FEATURE_NAME}Domain",
-                "${FEATURE_NAME}Data"
-            ]
-        ),
-
-EOF
-)"
-
+    mkdir -p "$FEATURE_TESTS_DIR/DomainTests"
+    mkdir -p "$FEATURE_TESTS_DIR/DataTests"
 fi
 
 
-# MARK: - Update Package.swift
+# MARK: - Domain Placeholder
 
-echo ""
-echo "Updating FeaturesPackage/Package.swift..."
-echo ""
-
-insert_before_marker \
-    "$PACKAGE_MANIFEST" \
-    "$PRODUCTS_MARKER" \
-    "$PRODUCT_BLOCK"
-
-insert_before_marker \
-    "$PACKAGE_MANIFEST" \
-    "$TARGETS_MARKER" \
-    "$TARGET_BLOCK"
-
-if [[ "$CREATE_TESTS" == true ]]; then
-
-    insert_before_marker \
-        "$PACKAGE_MANIFEST" \
-        "$TEST_TARGETS_MARKER" \
-        "$TEST_TARGET_BLOCK"
-
-fi
-
-
-# MARK: - Create Source Directories
-
-echo "Creating feature modules..."
-echo ""
-
-mkdir -p "$SOURCES_DIR/${FEATURE_NAME}Domain"
-mkdir -p "$SOURCES_DIR/${FEATURE_NAME}Data"
-mkdir -p "$SOURCES_DIR/${FEATURE_NAME}Interface"
-mkdir -p "$SOURCES_DIR/${FEATURE_NAME}Assembly"
-
-
-# MARK: - Domain
-
-cat > "$SOURCES_DIR/${FEATURE_NAME}Domain/${FEATURE_NAME}Domain.swift" <<EOF
+cat > "$FEATURE_SOURCE_DIR/Domain/${FEATURE_NAME}Domain.swift" <<EOF
 public enum ${FEATURE_NAME}Domain {}
 EOF
 
 
-# MARK: - Data
+# MARK: - Data Placeholder
 
-cat > "$SOURCES_DIR/${FEATURE_NAME}Data/${FEATURE_NAME}Data.swift" <<EOF
+cat > "$FEATURE_SOURCE_DIR/Data/${FEATURE_NAME}Data.swift" <<EOF
 import ${FEATURE_NAME}Domain
 
 public enum ${FEATURE_NAME}Data {}
 EOF
 
 
-# MARK: - Interface
+# MARK: - Interface Placeholder
 
-cat > "$SOURCES_DIR/${FEATURE_NAME}Interface/${FEATURE_NAME}View.swift" <<EOF
+cat > "$FEATURE_SOURCE_DIR/Interface/${FEATURE_NAME}View.swift" <<EOF
 import SwiftUI
 
 public struct ${FEATURE_NAME}View: View {
@@ -594,9 +495,9 @@ public struct ${FEATURE_NAME}View: View {
 EOF
 
 
-# MARK: - Assembly
+# MARK: - Assembly Placeholder
 
-cat > "$SOURCES_DIR/${FEATURE_NAME}Assembly/${FEATURE_NAME}FeatureBuilder.swift" <<EOF
+cat > "$FEATURE_SOURCE_DIR/Assembly/${FEATURE_NAME}FeatureBuilder.swift" <<EOF
 import ${FEATURE_NAME}Interface
 import SwiftUI
 
@@ -616,10 +517,7 @@ EOF
 
 if [[ "$CREATE_TESTS" == true ]]; then
 
-    mkdir -p "$TESTS_DIR/${FEATURE_NAME}DomainTests"
-    mkdir -p "$TESTS_DIR/${FEATURE_NAME}DataTests"
-
-    cat > "$TESTS_DIR/${FEATURE_NAME}DomainTests/${FEATURE_NAME}DomainTests.swift" <<EOF
+    cat > "$FEATURE_TESTS_DIR/DomainTests/${FEATURE_NAME}DomainTests.swift" <<EOF
 import Testing
 @testable import ${FEATURE_NAME}Domain
 
@@ -630,7 +528,8 @@ struct ${FEATURE_NAME}DomainTests {
 }
 EOF
 
-    cat > "$TESTS_DIR/${FEATURE_NAME}DataTests/${FEATURE_NAME}DataTests.swift" <<EOF
+
+    cat > "$FEATURE_TESTS_DIR/DataTests/${FEATURE_NAME}DataTests.swift" <<EOF
 import Testing
 @testable import ${FEATURE_NAME}Data
 
@@ -644,10 +543,30 @@ EOF
 fi
 
 
-# MARK: - Validate Package Manifest
+# MARK: - Feature Manifest Configuration
+
+FEATURE_CONFIGURATION="$(cat <<EOF
+    FeatureConfiguration(
+        name: "$FEATURE_NAME",
+        usesNetworking: $USES_NETWORKING,
+        hasTests: $CREATE_TESTS
+    ),
+EOF
+)"
+
+
+echo "Registering feature in Package.swift..."
+
+insert_before_marker \
+    "$PACKAGE_MANIFEST" \
+    "$FEATURE_MARKER" \
+    "$FEATURE_CONFIGURATION"
+
+
+# MARK: - Validate Generated Package
 
 echo ""
-echo "Validating Swift package manifest..."
+echo "Validating generated package..."
 echo ""
 
 swift package \
@@ -656,6 +575,37 @@ swift package \
     >/dev/null
 
 echo "✓ Package manifest is valid."
+
+
+# MARK: - Verify Generated Files
+
+EXPECTED_FILES=(
+    "$FEATURE_SOURCE_DIR/Domain/${FEATURE_NAME}Domain.swift"
+    "$FEATURE_SOURCE_DIR/Data/${FEATURE_NAME}Data.swift"
+    "$FEATURE_SOURCE_DIR/Interface/${FEATURE_NAME}View.swift"
+    "$FEATURE_SOURCE_DIR/Assembly/${FEATURE_NAME}FeatureBuilder.swift"
+)
+
+
+if [[ "$CREATE_TESTS" == true ]]; then
+
+    EXPECTED_FILES+=(
+        "$FEATURE_TESTS_DIR/DomainTests/${FEATURE_NAME}DomainTests.swift"
+        "$FEATURE_TESTS_DIR/DataTests/${FEATURE_NAME}DataTests.swift"
+    )
+
+fi
+
+
+for file in "${EXPECTED_FILES[@]}"; do
+
+    if [[ ! -f "$file" ]]; then
+        fail "Expected generated file is missing:
+
+$file"
+    fi
+
+done
 
 
 # MARK: - Success
@@ -678,28 +628,40 @@ echo "  ${FEATURE_NAME}Interface"
 echo "  ${FEATURE_NAME}Assembly"
 echo ""
 
+
 if [[ "$CREATE_TESTS" == true ]]; then
+
     echo "Generated tests:"
     echo ""
     echo "  ${FEATURE_NAME}DomainTests"
     echo "  ${FEATURE_NAME}DataTests"
     echo ""
+
 fi
 
+
+echo "Registered configuration:"
+echo ""
+echo "  FeatureConfiguration("
+echo "      name: \"$FEATURE_NAME\","
+echo "      usesNetworking: $USES_NETWORKING,"
+echo "      hasTests: $CREATE_TESTS"
+echo "  )"
+echo ""
 echo "Next steps:"
 echo ""
-echo "1. Open Xcode and resolve package changes"
+echo "1. Open Xcode and resolve package changes if required"
 echo ""
 echo "2. Add ${FEATURE_NAME}Assembly to the application target"
-echo "   if the application needs to present this feature"
+echo "   when the application needs to present this feature"
 echo ""
 echo "3. Wire ${FEATURE_NAME}FeatureBuilder from AppContainer"
 echo ""
 echo "4. Add generated test targets to the Xcode Test Plan"
 echo "   if they are not included automatically"
 echo ""
-echo "5. Replace the generated placeholder files with"
-echo "   feature-specific implementation as requirements emerge"
+echo "5. Replace placeholder files with implementation"
+echo "   as feature requirements emerge"
 echo ""
 echo "6. Review generated changes with:"
 echo ""
