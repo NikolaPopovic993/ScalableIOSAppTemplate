@@ -29,14 +29,14 @@ let package = Package(
                 "AuthenticationInterface"
             ]
         ),
-        
+
         .library(
             name: "AuthenticationAssembly",
             targets: [
                 "AuthenticationAssembly"
             ]
         ),
-        
+
         // FEATURE_GENERATOR_PRODUCTS
     ],
     dependencies: [
@@ -51,7 +51,8 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "AuthenticationDomain"
+            name: "AuthenticationDomain",
+            path: "Sources/Authentication/Domain"
         ),
 
         .target(
@@ -63,7 +64,8 @@ let package = Package(
                     name: "CoreNetworking",
                     package: "CoreNetworking"
                 )
-            ]
+            ],
+            path: "Sources/Authentication/Data"
         ),
 
         .target(
@@ -75,9 +77,10 @@ let package = Package(
                     name: "SharedUI",
                     package: "SharedPackage"
                 )
-            ]
+            ],
+            path: "Sources/Authentication/Interface"
         ),
-        
+
         .target(
             name: "AuthenticationAssembly",
             dependencies: [
@@ -89,18 +92,20 @@ let package = Package(
                     name: "CoreNetworking",
                     package: "CoreNetworking"
                 )
-            ]
+            ],
+            path: "Sources/Authentication/Assembly"
         ),
 
         // FEATURE_GENERATOR_TARGETS
-        
+
         .testTarget(
             name: "AuthenticationDomainTests",
             dependencies: [
                 "AuthenticationDomain"
-            ]
+            ],
+            path: "Tests/Authentication/DomainTests"
         ),
-        
+
         .testTarget(
             name: "AuthenticationDataTests",
             dependencies: [
@@ -111,9 +116,10 @@ let package = Package(
                     name: "CoreNetworking",
                     package: "CoreNetworking"
                 )
-            ]
+            ],
+            path: "Tests/Authentication/DataTests"
         ),
-        
+
         // FEATURE_GENERATOR_TEST_TARGETS
     ]
 )
