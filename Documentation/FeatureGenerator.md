@@ -10,7 +10,7 @@ Run:
 ```
 
 The generator creates the feature structure, registers its Swift targets, and
-configures optional dependencies.
+configures common optional dependencies.
 
 ---
 
@@ -77,6 +77,22 @@ ProfileDomainTests
 ProfileDataTests
 ```
 
+The physical directory structure and Swift module names are intentionally
+different.
+
+For example:
+
+```text
+Swift target:
+ProfileDomain
+
+Physical location:
+Sources/Profile/Domain
+```
+
+This keeps the filesystem feature-first while preserving compiler-enforced
+module boundaries.
+
 ---
 
 ## Feature Manifest
@@ -98,8 +114,18 @@ FeatureConfiguration(
 )
 ```
 
-The manifest helper converts this configuration into products, targets,
-dependencies, and physical paths.
+The manifest helper converts this configuration into:
+
+```text
+Products
+Targets
+Dependencies
+Source paths
+Optional test targets
+```
+
+This avoids repeating large Swift Package target declarations for every
+feature.
 
 ---
 
@@ -107,20 +133,26 @@ dependencies, and physical paths.
 
 ## Networking
 
-Enable:
+Enable networking interactively:
 
 ```text
 Use CoreNetworking? Y
 ```
 
-or:
+or through CLI:
 
 ```bash
 --networking
 ```
 
-This adds CoreNetworking to feature modules that require networking
-infrastructure.
+Result:
+
+```swift
+usesNetworking: true
+```
+
+CoreNetworking is automatically added to the feature targets that require
+networking infrastructure.
 
 Disable with:
 
@@ -138,7 +170,7 @@ usesNetworking: false
 
 ## SharedUI
 
-Enable:
+Enable SharedUI interactively:
 
 ```text
 Use SharedUI? Y
@@ -150,7 +182,13 @@ or:
 --shared-ui
 ```
 
-This adds:
+Result:
+
+```swift
+usesSharedUI: true
+```
+
+The manifest adds:
 
 ```swift
 .product(
@@ -196,6 +234,12 @@ Disable with:
 --no-tests
 ```
 
+Result:
+
+```swift
+hasTests: false
+```
+
 ---
 
 # Non-Interactive Usage
@@ -222,6 +266,20 @@ A minimal feature:
     --yes
 ```
 
+Available options:
+
+```text
+--name <name>
+--networking
+--no-networking
+--shared-ui
+--no-shared-ui
+--tests
+--no-tests
+--yes
+--help
+```
+
 ---
 
 # Generated Code
@@ -241,7 +299,8 @@ Mappers
 Services
 ```
 
-These types should be introduced when feature requirements require them.
+These types should be introduced when actual feature requirements justify
+them.
 
 The generator is responsible for architectural scaffolding, not business
 implementation.
@@ -261,7 +320,7 @@ FeatureConfiguration(
 )
 ```
 
-If SharedUI is required later, simply change:
+If SharedUI is required later, change:
 
 ```swift
 usesSharedUI: false
@@ -273,7 +332,7 @@ to:
 usesSharedUI: true
 ```
 
-The manifest automatically adds the required package dependency.
+The manifest automatically adds SharedUI to the feature Interface target.
 
 The Interface module may then use:
 
@@ -297,13 +356,13 @@ public struct ProfileView: View {
 }
 ```
 
-No manual target dependency declaration is required.
+No manual target declaration is required.
 
 ---
 
 # Adding Networking Later
 
-The same approach applies to networking.
+Networking works in the same way.
 
 Change:
 
@@ -317,37 +376,368 @@ to:
 usesNetworking: true
 ```
 
-The manifest adds CoreNetworking to the relevant feature targets.
+CoreNetworking is then added to the feature modules configured by the
+manifest.
 
-Feature code may then import the networking abstraction where required.
+---
+
+# Adding Additional Dependencies
+
+The generator intentionally exposes only common feature options:
+
+```text
+CoreNetworking
+SharedUI
+Tests
+```
+
+Other dependencies should be added explicitly to the layer that actually
+requires them.
+
+`FeatureConfiguration` supports:
+
+```swift
+domainDependencies
+dataDependencies
+interfaceDependencies
+assemblyDependencies
+```
+
+All of these dependencies are optional and default to empty arrays.
+
+A normal feature therefore remains simple:
+
+```swift
+FeatureConfiguration(
+    name: "Profile",
+    usesNetworking: true,
+    usesSharedUI: true,
+    hasTests: true
+)
+```
+
+---
+
+## Adding SharedUtilities to Data
+
+Suppose `ProfileData` requires functionality from:
+
+```text
+SharedUtilities
+```
+
+Configure:
+
+```swift
+FeatureConfiguration(
+    name: "Profile",
+    usesNetworking: true,
+    usesSharedUI: true,
+    hasTests: true,
+    dataDependencies: [
+        .product(
+            name: "SharedUtilities",
+            package: "SharedPackage"
+        )
+    ]
+)
+```
+
+`ProfileData` can then use:
+
+```swift
+import SharedUtilities
+```
+
+The resulting dependency graph is:
+
+```text
+ProfileData
+├── ProfileDomain
+├── CoreNetworking
+└── SharedUtilities
+```
+
+Other Profile modules do not automatically receive access to
+`SharedUtilities`.
+
+---
+
+## Adding SharedUtilities to Interface
+
+If only the Interface layer requires it:
+
+```swift
+FeatureConfiguration(
+    name: "Profile",
+    usesNetworking: true,
+    usesSharedUI: true,
+    hasTests: true,
+    interfaceDependencies: [
+        .product(
+            name: "SharedUtilities",
+            package: "SharedPackage"
+        )
+    ]
+)
+```
+
+Then:
+
+```swift
+import SharedUtilities
+```
+
+is available inside:
+
+```text
+ProfileInterface
+```
+
+but not automatically in Domain, Data, or Assembly.
+
+---
+
+## Adding a Domain Dependency
+
+Domain dependencies should be used carefully because Domain should remain
+independent from UI and infrastructure.
+
+A pure shared business module may be appropriate.
+
+For example:
+
+```swift
+FeatureConfiguration(
+    name: "Profile",
+    usesNetworking: true,
+    usesSharedUI: true,
+    hasTests: true,
+    domainDependencies: [
+        .product(
+            name: "UserDomain",
+            package: "SharedPackage"
+        )
+    ]
+)
+```
+
+This could represent:
+
+```text
+ProfileDomain
+    ↓
+UserDomain
+```
+
+Avoid adding infrastructure such as:
+
+```text
+Networking
+UI
+Persistence implementations
+```
+
+to Domain.
+
+---
+
+## Adding an Assembly Dependency
+
+Assembly may require additional concrete infrastructure during feature
+composition.
+
+Example:
+
+```swift
+FeatureConfiguration(
+    name: "Profile",
+    usesNetworking: true,
+    usesSharedUI: true,
+    hasTests: true,
+    assemblyDependencies: [
+        .product(
+            name: "Analytics",
+            package: "SharedPackage"
+        )
+    ]
+)
+```
+
+The dependency becomes available only to:
+
+```text
+ProfileAssembly
+```
+
+---
+
+# Multiple Custom Dependencies
+
+More than one dependency can be declared.
+
+Example:
+
+```swift
+FeatureConfiguration(
+    name: "Profile",
+    usesNetworking: true,
+    usesSharedUI: true,
+    hasTests: true,
+    domainDependencies: [
+        .product(
+            name: "UserDomain",
+            package: "SharedPackage"
+        )
+    ],
+    dataDependencies: [
+        .product(
+            name: "SharedUtilities",
+            package: "SharedPackage"
+        )
+    ],
+    interfaceDependencies: [
+        .product(
+            name: "DesignTokens",
+            package: "SharedPackage"
+        )
+    ]
+)
+```
+
+Each dependency remains scoped to the module that consumes it.
+
+---
+
+# Why Custom Dependencies Are Not Generator Questions
+
+The generator does not ask:
+
+```text
+Use SharedUtilities?
+Use Analytics?
+Use UserDomain?
+Use Session?
+Use Validation?
+```
+
+because this would make the generator increasingly coupled to the
+application's evolving architecture.
+
+Instead:
+
+```text
+Common dependency
+        ↓
+Generator option
+
+Feature-specific dependency
+        ↓
+Explicit layer dependency
+```
+
+This keeps the generator small while still allowing features to scale.
+
+---
+
+# Dependency Guidelines
+
+Prefer the narrowest possible dependency scope.
+
+If only `ProfileData` requires SharedUtilities:
+
+```text
+Correct:
+ProfileData → SharedUtilities
+```
+
+Avoid:
+
+```text
+ProfileDomain → SharedUtilities
+ProfileData → SharedUtilities
+ProfileInterface → SharedUtilities
+ProfileAssembly → SharedUtilities
+```
+
+unless all four modules genuinely consume it.
+
+Explicit dependency ownership improves:
+
+```text
+Architecture clarity
+Compile-time boundaries
+Testability
+Future refactoring
+Module reuse
+```
+
+---
+
+# Local vs Remote Dependencies
+
+Use this general rule:
+
+```text
+Feature-specific implementation
+        ↓
+Feature module
+
+Application-specific shared capability
+        ↓
+SharedPackage
+
+Reusable across multiple applications
+        ↓
+Separate remote Swift Package
+```
+
+Examples:
+
+```text
+ProfileMapper
+→ ProfileData
+
+AppLoadingView
+→ SharedUI
+
+Application-specific String utility
+→ SharedUtilities
+
+Current user business abstraction
+→ UserDomain when genuinely shared
+
+Generic networking
+→ CoreNetworking remote package
+```
 
 ---
 
 # Adding Tests Later
 
-Change:
+A feature may initially have:
 
 ```swift
 hasTests: false
 ```
 
-to:
+Changing it to:
 
 ```swift
 hasTests: true
 ```
 
-Then create the expected directories:
+causes the manifest to expect:
 
 ```text
 Tests/<Feature>/DomainTests
 Tests/<Feature>/DataTests
 ```
 
-The manifest expects those paths when test targets are enabled.
+Those directories and source files must also exist.
 
-For that reason, using the generator when initially creating the feature is
-recommended.
+For this reason, enabling tests through the generator when creating a feature
+is usually recommended.
 
 ---
 
@@ -362,9 +752,10 @@ Application navigation
 project.pbxproj
 Xcode Test Plan
 Business-specific integration
+Custom feature dependencies
 ```
 
-A generator cannot know whether a feature should be presented as:
+A generator cannot determine whether a feature belongs in:
 
 ```text
 Root flow
@@ -375,21 +766,22 @@ Full-screen cover
 Child flow
 ```
 
-That integration remains explicit.
+Those decisions remain explicit.
 
 ---
 
 # After Generating a Feature
 
-Typical next steps are:
+Typical next steps:
 
 ```text
 1. Open Xcode
 2. Resolve package changes if required
-3. Add the feature Assembly product to the host application when needed
+3. Add the feature Assembly product to the host application if needed
 4. Wire the FeatureBuilder through AppContainer
-5. Add generated test targets to the Xcode Test Plan if needed
-6. Implement actual business requirements
+5. Add generated tests to the Xcode Test Plan if required
+6. Add feature-specific dependencies when needed
+7. Implement business requirements
 ```
 
 ---
@@ -417,11 +809,12 @@ git status
 git diff
 ```
 
-To discard a test generation:
+For disposable generator testing, changes can be removed with:
 
 ```bash
 git reset --hard HEAD
 git clean -fd
 ```
 
-> `git clean -fd` removes untracked files and directories. Use it carefully.
+> `git clean -fd` removes untracked files and directories. Review its effect
+> before using it in a working repository.
