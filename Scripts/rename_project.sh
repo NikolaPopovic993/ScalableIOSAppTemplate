@@ -8,9 +8,15 @@ set -e
 #
 # Renames the technical Xcode project structure.
 #
-# This script is intended to be executed immediately after
-# creating a new repository from the GitHub template and
-# before running setup.sh.
+# Can be used interactively:
+#
+#   ./Scripts/rename_project.sh
+#
+# Or non-interactively:
+#
+#   ./Scripts/rename_project.sh \
+#       --name MyAwesomeApp \
+#       --yes
 #
 # It renames:
 #
@@ -42,6 +48,9 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 cd "$ROOT_DIR"
 
+NEW_NAME=""
+AUTO_CONFIRM=false
+
 
 # MARK: - Helpers
 
@@ -59,6 +68,29 @@ fail() {
     echo "❌ $1"
     echo ""
     exit 1
+}
+
+
+print_usage() {
+    echo ""
+    echo "Usage:"
+    echo ""
+    echo "  Interactive:"
+    echo ""
+    echo "    ./Scripts/rename_project.sh"
+    echo ""
+    echo "  With arguments:"
+    echo ""
+    echo "    ./Scripts/rename_project.sh \\"
+    echo "        --name MyAwesomeApp \\"
+    echo "        --yes"
+    echo ""
+    echo "Options:"
+    echo ""
+    echo "    --name <name>   Technical Xcode project name"
+    echo "    --yes           Skip confirmation"
+    echo "    --help, -h      Show this help"
+    echo ""
 }
 
 
@@ -89,7 +121,8 @@ replace_project_name_in_tracked_files() {
 
     git grep -Il "$OLD_NAME" -- . | while IFS= read -r file
     do
-        # Do not modify this script itself.
+        # The script must continue to know the original
+        # template name if it is executed again.
         if [[ "$file" == "Scripts/rename_project.sh" ]]; then
             continue
         fi
@@ -103,9 +136,43 @@ replace_project_name_in_tracked_files() {
 }
 
 
+# MARK: - Arguments
+
+while [[ $# -gt 0 ]]; do
+
+    case "$1" in
+
+        --name)
+            [[ $# -ge 2 ]] || fail "Missing value for --name."
+            NEW_NAME="$2"
+            shift 2
+            ;;
+
+        --yes)
+            AUTO_CONFIRM=true
+            shift
+            ;;
+
+        --help|-h)
+            print_usage
+            exit 0
+            ;;
+
+        *)
+            fail "Unknown argument: $1
+
+Run ./Scripts/rename_project.sh --help for usage."
+            ;;
+
+    esac
+
+done
+
+
 # MARK: - Validation
 
 print_header
+
 
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     fail "This script must be executed inside a Git repository."
@@ -132,14 +199,20 @@ fi
 
 # MARK: - Input
 
-echo "This script performs a technical rename of the Xcode project."
-echo ""
-echo "Current project:"
-echo "  $OLD_NAME"
-echo ""
+if [[ -z "$NEW_NAME" ]]; then
 
-read -r -p "New project name (for example MyAwesomeApp): " NEW_NAME
+    echo "This script performs a technical rename of the Xcode project."
+    echo ""
+    echo "Current project:"
+    echo "  $OLD_NAME"
+    echo ""
 
+    read -r -p "New project name (for example MyAwesomeApp): " NEW_NAME
+
+fi
+
+
+# MARK: - Project Name Validation
 
 if [[ -z "$NEW_NAME" ]]; then
     fail "Project name cannot be empty."
@@ -162,11 +235,11 @@ MyAwesomeApp
 Biologer
 BankingApp
 
-Do not use spaces, hyphens, or special characters."
+Do not use spaces, hyphens, underscores, or special characters."
 fi
 
 
-# MARK: - Confirmation
+# MARK: - Summary
 
 echo ""
 echo "Rename summary"
@@ -180,16 +253,22 @@ echo "Application display name and bundle identifier"
 echo "will NOT be changed by this script."
 echo ""
 
-read -r -p "Continue? [Y/n]: " CONFIRM
 
-CONFIRM="${CONFIRM:-Y}"
+# MARK: - Confirmation
 
+if [[ "$AUTO_CONFIRM" != true ]]; then
 
-if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
-    echo ""
-    echo "Rename cancelled."
-    echo ""
-    exit 0
+    read -r -p "Continue? [Y/n]: " CONFIRM
+
+    CONFIRM="${CONFIRM:-Y}"
+
+    if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+        echo ""
+        echo "Rename cancelled."
+        echo ""
+        exit 0
+    fi
+
 fi
 
 
