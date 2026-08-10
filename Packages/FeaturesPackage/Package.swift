@@ -208,7 +208,7 @@ let features: [FeatureConfiguration] = [
         name: "Authentication",
         usesNetworking: true,
         hasTests: true
-    )
+    ),
 
     // FEATURE_GENERATOR_FEATURES
 ]
