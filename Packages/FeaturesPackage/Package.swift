@@ -8,6 +8,7 @@ struct FeatureConfiguration {
 
     let name: String
     let usesNetworking: Bool
+    let usesSharedUI: Bool
     let hasTests: Bool
 
     var domainTargetName: String {
@@ -113,18 +114,24 @@ struct FeatureConfiguration {
     }
 
     private func makeInterfaceTarget() -> Target {
-        .target(
-            name: interfaceTargetName,
-            dependencies: [
-                .target(
-                    name: domainTargetName
-                ),
+        var dependencies: [Target.Dependency] = [
+            .target(
+                name: domainTargetName
+            )
+        ]
 
+        if usesSharedUI {
+            dependencies.append(
                 .product(
                     name: "SharedUI",
                     package: "SharedPackage"
                 )
-            ],
+            )
+        }
+
+        return .target(
+            name: interfaceTargetName,
+            dependencies: dependencies,
             path: "Sources/\(name)/Interface"
         )
     }
@@ -207,6 +214,7 @@ let features: [FeatureConfiguration] = [
     FeatureConfiguration(
         name: "Authentication",
         usesNetworking: true,
+        usesSharedUI: true,
         hasTests: true
     ),
 

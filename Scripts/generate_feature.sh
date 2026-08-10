@@ -53,6 +53,7 @@ FEATURE_MARKER="// FEATURE_GENERATOR_FEATURES"
 
 FEATURE_NAME=""
 USES_NETWORKING=""
+USES_SHARED_UI=""
 CREATE_TESTS=""
 AUTO_CONFIRM=false
 
@@ -97,6 +98,8 @@ print_usage() {
     echo "    --name <name>       Feature name in PascalCase"
     echo "    --networking        Enable CoreNetworking"
     echo "    --no-networking     Do not use CoreNetworking"
+    echo "    --shared-ui         Enable SharedUI"
+    echo "    --no-shared-ui      Do not use SharedUI"
     echo "    --tests             Generate Domain and Data tests"
     echo "    --no-tests          Do not generate tests"
     echo "    --yes               Skip confirmation"
@@ -215,6 +218,16 @@ while [[ $# -gt 0 ]]; do
 
         --no-networking)
             USES_NETWORKING=false
+            shift
+            ;;
+            
+        --shared-ui)
+            USES_SHARED_UI=true
+            shift
+            ;;
+
+        --no-shared-ui)
+            USES_SHARED_UI=false
             shift
             ;;
 
@@ -353,6 +366,10 @@ if [[ -z "$USES_NETWORKING" ]]; then
     USES_NETWORKING="$(ask_yes_no "Use CoreNetworking?" true)"
 fi
 
+if [[ -z "$USES_SHARED_UI" ]]; then
+    USES_SHARED_UI="$(ask_yes_no "Use SharedUI?" true)"
+fi
+
 
 if [[ -z "$CREATE_TESTS" ]]; then
     CREATE_TESTS="$(ask_yes_no "Create Domain and Data tests?" true)"
@@ -402,6 +419,20 @@ if [[ "$USES_NETWORKING" == true ]]; then
 else
 
     echo "CoreNetworking:"
+    echo "  Disabled"
+
+fi
+
+echo ""
+
+if [[ "$USES_SHARED_UI" == true ]]; then
+
+    echo "SharedUI:"
+    echo "  Enabled"
+
+else
+
+    echo "SharedUI:"
     echo "  Disabled"
 
 fi
@@ -549,6 +580,7 @@ FEATURE_CONFIGURATION="$(cat <<EOF
     FeatureConfiguration(
         name: "$FEATURE_NAME",
         usesNetworking: $USES_NETWORKING,
+        usesSharedUI: $USES_SHARED_UI,
         hasTests: $CREATE_TESTS
     ),
 EOF
@@ -645,6 +677,7 @@ echo ""
 echo "  FeatureConfiguration("
 echo "      name: \"$FEATURE_NAME\","
 echo "      usesNetworking: $USES_NETWORKING,"
+echo "      usesSharedUI: $USES_SHARED_UI,"
 echo "      hasTests: $CREATE_TESTS"
 echo "  )"
 echo ""
