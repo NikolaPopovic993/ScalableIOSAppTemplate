@@ -23,13 +23,12 @@ public final class DefaultAuthenticationRepository:
         credentials: LoginCredentials
     ) async throws -> AuthenticationSession {
 
-//        let endpoint = try LoginEndpoint(
-//            credentials: credentials
-//        )
-//
-//        let response = try await networkClient.request(endpoint)
+        let endpoint = try LoginEndpoint(
+            credentials: credentials
+        )
 
-//        return response.toDomain()
-        return AuthenticationSession.init(user: AuthenticatedUser(id: 1, username: "Pera", email: "pera@test.com", firstName: "Petar", lastName: "Peric", imageURL: nil), accessToken: "asdfasfdsagsdf;l", refreshToken: "asdfasdf")
+        let response = try await networkClient.request(endpoint)
+
+        return response.toDomain()
     }
 }

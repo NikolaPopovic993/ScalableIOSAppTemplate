@@ -10,6 +10,8 @@ import Testing
 @testable import AuthenticationDomain
 
 struct LoginUseCaseTests {
+    
+    
 
     @Test
     func execute_whenUsernameIsEmpty_throwsEmptyUsername() async {

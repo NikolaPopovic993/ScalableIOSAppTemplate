@@ -25,6 +25,20 @@
         "identifier" : "9E0928143025FE0200FE4DE3",
         "name" : "ScalableIOSAppTemplateTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/FeaturesPackage",
+        "identifier" : "AuthenticationDataTests",
+        "name" : "AuthenticationDataTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/FeaturesPackage",
+        "identifier" : "AuthenticationDomainTests",
+        "name" : "AuthenticationDomainTests"
+      }
     }
   ],
   "version" : 1
