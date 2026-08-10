@@ -128,7 +128,6 @@
 				9E0928183025FE0200FE4DE3 /* ScalableIOSAppTemplateTests */,
 				9E0928223025FE0200FE4DE3 /* ScalableIOSAppTemplateUITests */,
 				9E0928AA302617F100FE4DE3 /* ScalableIOSAppTemplate.xctestplan */,
-				9E0929073029C5A100FE4DE3 /* Frameworks */,
 				9E0928093025FE0100FE4DE3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -141,13 +140,6 @@
 				9E09281F3025FE0200FE4DE3 /* ScalableIOSAppTemplateUITests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		9E0929073029C5A100FE4DE3 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
