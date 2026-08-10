@@ -41,7 +41,7 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            path: "../CorePackage"
+            path: "../SharedPackage"
         ),
 
         .package(
@@ -73,7 +73,7 @@ let package = Package(
 
                 .product(
                     name: "CoreUI",
-                    package: "CorePackage"
+                    package: "SharedPackage"
                 )
             ]
         ),
