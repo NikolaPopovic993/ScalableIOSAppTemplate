@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9E09285B302610E600FE4DE3 /* CoreUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09285A302610E600FE4DE3 /* CoreUI */; };
-		9E09285E302611B700FE4DE3 /* CoreUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09285D302611B700FE4DE3 /* CoreUI */; };
-		9E0928613026135400FE4DE3 /* CoreUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9E0928603026135400FE4DE3 /* CoreUI */; };
 		9E0928FF3029BA8B00FE4DE3 /* CoreNetworking in Frameworks */ = {isa = PBXBuildFile; productRef = 9E0928FE3029BA8B00FE4DE3 /* CoreNetworking */; };
 		9E0929093029C5A100FE4DE3 /* AuthenticationAssembly in Frameworks */ = {isa = PBXBuildFile; productRef = 9E0929083029C5A100FE4DE3 /* AuthenticationAssembly */; };
 /* End PBXBuildFile section */
@@ -96,9 +93,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9E09285B302610E600FE4DE3 /* CoreUI in Frameworks */,
-				9E09285E302611B700FE4DE3 /* CoreUI in Frameworks */,
-				9E0928613026135400FE4DE3 /* CoreUI in Frameworks */,
 				9E0928FF3029BA8B00FE4DE3 /* CoreNetworking in Frameworks */,
 				9E0929093029C5A100FE4DE3 /* AuthenticationAssembly in Frameworks */,
 			);
@@ -180,9 +174,6 @@
 			);
 			name = ScalableIOSAppTemplate;
 			packageProductDependencies = (
-				9E09285A302610E600FE4DE3 /* CoreUI */,
-				9E09285D302611B700FE4DE3 /* CoreUI */,
-				9E0928603026135400FE4DE3 /* CoreUI */,
 				9E0928FE3029BA8B00FE4DE3 /* CoreNetworking */,
 				9E0929083029C5A100FE4DE3 /* AuthenticationAssembly */,
 			);
@@ -269,7 +260,6 @@
 			mainGroup = 9E0927FF3025FE0000FE4DE3;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				9E09285F3026135400FE4DE3 /* XCLocalSwiftPackageReference "Packages/CorePackage" */,
 				9E0928FD3029BA8B00FE4DE3 /* XCRemoteSwiftPackageReference "CoreNetworking" */,
 				9E0929003029BAD800FE4DE3 /* XCLocalSwiftPackageReference "Packages/FeaturesPackage" */,
 			);
@@ -658,10 +648,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		9E09285F3026135400FE4DE3 /* XCLocalSwiftPackageReference "Packages/CorePackage" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/CorePackage;
-		};
 		9E0929003029BAD800FE4DE3 /* XCLocalSwiftPackageReference "Packages/FeaturesPackage" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/FeaturesPackage;
@@ -680,18 +666,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		9E09285A302610E600FE4DE3 /* CoreUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = CoreUI;
-		};
-		9E09285D302611B700FE4DE3 /* CoreUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = CoreUI;
-		};
-		9E0928603026135400FE4DE3 /* CoreUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = CoreUI;
-		};
 		9E0928FE3029BA8B00FE4DE3 /* CoreNetworking */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9E0928FD3029BA8B00FE4DE3 /* XCRemoteSwiftPackageReference "CoreNetworking" */;

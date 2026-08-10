@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "CorePackage",
+    name: "SharedPackage",
     platforms: [
         .iOS(.v17)
     ],
