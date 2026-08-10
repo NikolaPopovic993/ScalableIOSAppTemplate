@@ -11,6 +11,7 @@ struct AppConfiguration: Sendable {
 
     let environment: AppEnvironment
     let isLoggingEnabled: Bool
+    let apiBaseURL: URL
 
     static func load(
         from bundle: Bundle = .main
@@ -20,8 +21,45 @@ struct AppConfiguration: Sendable {
 
         return AppConfiguration(
             environment: environment,
-            isLoggingEnabled: isLoggingEnabled
+            isLoggingEnabled: isLoggingEnabled,
+            apiBaseURL: readAPIBaseURL(
+                 from: bundle
+             )
         )
+    }
+}
+
+private extension AppConfiguration {
+
+    static func readAPIBaseURL(
+        from bundle: Bundle
+    ) -> URL {
+
+        guard
+            let scheme = bundle.object(
+                forInfoDictionaryKey: "API_SCHEME"
+            ) as? String,
+            let host = bundle.object(
+                forInfoDictionaryKey: "API_HOST"
+            ) as? String
+        else {
+            preconditionFailure(
+                "Missing API configuration."
+            )
+        }
+
+        var components = URLComponents()
+
+        components.scheme = scheme
+        components.host = host
+
+        guard let url = components.url else {
+            preconditionFailure(
+                "Invalid API configuration."
+            )
+        }
+
+        return url
     }
 }
 

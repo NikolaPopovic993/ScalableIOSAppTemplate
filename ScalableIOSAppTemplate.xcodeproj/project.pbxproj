@@ -10,6 +10,8 @@
 		9E09285B302610E600FE4DE3 /* CoreUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09285A302610E600FE4DE3 /* CoreUI */; };
 		9E09285E302611B700FE4DE3 /* CoreUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09285D302611B700FE4DE3 /* CoreUI */; };
 		9E0928613026135400FE4DE3 /* CoreUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9E0928603026135400FE4DE3 /* CoreUI */; };
+		9E0928FF3029BA8B00FE4DE3 /* CoreNetworking in Frameworks */ = {isa = PBXBuildFile; productRef = 9E0928FE3029BA8B00FE4DE3 /* CoreNetworking */; };
+		9E0929093029C5A100FE4DE3 /* AuthenticationAssembly in Frameworks */ = {isa = PBXBuildFile; productRef = 9E0929083029C5A100FE4DE3 /* AuthenticationAssembly */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +87,8 @@
 				9E09285B302610E600FE4DE3 /* CoreUI in Frameworks */,
 				9E09285E302611B700FE4DE3 /* CoreUI in Frameworks */,
 				9E0928613026135400FE4DE3 /* CoreUI in Frameworks */,
+				9E0928FF3029BA8B00FE4DE3 /* CoreNetworking in Frameworks */,
+				9E0929093029C5A100FE4DE3 /* AuthenticationAssembly in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -114,6 +118,7 @@
 				9E09280A3025FE0100FE4DE3 /* ScalableIOSAppTemplate */,
 				9E0928183025FE0200FE4DE3 /* ScalableIOSAppTemplateTests */,
 				9E0928223025FE0200FE4DE3 /* ScalableIOSAppTemplateUITests */,
+				9E0929073029C5A100FE4DE3 /* Frameworks */,
 				9E0928093025FE0100FE4DE3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -126,6 +131,13 @@
 				9E09281F3025FE0200FE4DE3 /* ScalableIOSAppTemplateUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9E0929073029C5A100FE4DE3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -153,6 +165,8 @@
 				9E09285A302610E600FE4DE3 /* CoreUI */,
 				9E09285D302611B700FE4DE3 /* CoreUI */,
 				9E0928603026135400FE4DE3 /* CoreUI */,
+				9E0928FE3029BA8B00FE4DE3 /* CoreNetworking */,
+				9E0929083029C5A100FE4DE3 /* AuthenticationAssembly */,
 			);
 			productName = ScalableIOSAppTemplate;
 			productReference = 9E0928083025FE0100FE4DE3 /* ScalableIOSAppTemplate.app */;
@@ -238,6 +252,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				9E09285F3026135400FE4DE3 /* XCLocalSwiftPackageReference "Packages/CorePackage" */,
+				9E0928FD3029BA8B00FE4DE3 /* XCRemoteSwiftPackageReference "CoreNetworking" */,
+				9E0929003029BAD800FE4DE3 /* XCLocalSwiftPackageReference "Packages/FeaturesPackage" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9E0928093025FE0100FE4DE3 /* Products */;
@@ -628,7 +644,22 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/CorePackage;
 		};
+		9E0929003029BAD800FE4DE3 /* XCLocalSwiftPackageReference "Packages/FeaturesPackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/FeaturesPackage;
+		};
 /* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9E0928FD3029BA8B00FE4DE3 /* XCRemoteSwiftPackageReference "CoreNetworking" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/NikolaPopovic993/CoreNetworking.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		9E09285A302610E600FE4DE3 /* CoreUI */ = {
@@ -642,6 +673,15 @@
 		9E0928603026135400FE4DE3 /* CoreUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = CoreUI;
+		};
+		9E0928FE3029BA8B00FE4DE3 /* CoreNetworking */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9E0928FD3029BA8B00FE4DE3 /* XCRemoteSwiftPackageReference "CoreNetworking" */;
+			productName = CoreNetworking;
+		};
+		9E0929083029C5A100FE4DE3 /* AuthenticationAssembly */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AuthenticationAssembly;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
