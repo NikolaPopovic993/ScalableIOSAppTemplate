@@ -36,6 +36,8 @@
 		9E0928153025FE0200FE4DE3 /* ScalableIOSAppTemplateTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ScalableIOSAppTemplateTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E09281F3025FE0200FE4DE3 /* ScalableIOSAppTemplateUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ScalableIOSAppTemplateUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E0928AA302617F100FE4DE3 /* ScalableIOSAppTemplate.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = ScalableIOSAppTemplate.xctestplan; sourceTree = "<group>"; };
+		9E0929113029CC5700FE4DE3 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = README.md; sourceTree = "<group>"; };
+		9E09291B3029D99600FE4DE3 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LICENSE; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -77,6 +79,16 @@
 			path = Packages;
 			sourceTree = "<group>";
 		};
+		9E09290B3029C97900FE4DE3 /* Documentation */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Documentation;
+			sourceTree = "<group>";
+		};
+		9E0929133029D34E00FE4DE3 /* Scripts */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Scripts;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,12 +124,16 @@
 		9E0927FF3025FE0000FE4DE3 = {
 			isa = PBXGroup;
 			children = (
-				9E0928AA302617F100FE4DE3 /* ScalableIOSAppTemplate.xctestplan */,
+				9E09291B3029D99600FE4DE3 /* LICENSE */,
+				9E0929113029CC5700FE4DE3 /* README.md */,
+				9E09290B3029C97900FE4DE3 /* Documentation */,
+				9E0929133029D34E00FE4DE3 /* Scripts */,
 				9E09285630260C6A00FE4DE3 /* Packages */,
 				9E09283B3026006F00FE4DE3 /* Config */,
 				9E09280A3025FE0100FE4DE3 /* ScalableIOSAppTemplate */,
 				9E0928183025FE0200FE4DE3 /* ScalableIOSAppTemplateTests */,
 				9E0928223025FE0200FE4DE3 /* ScalableIOSAppTemplateUITests */,
+				9E0928AA302617F100FE4DE3 /* ScalableIOSAppTemplate.xctestplan */,
 				9E0929073029C5A100FE4DE3 /* Frameworks */,
 				9E0928093025FE0100FE4DE3 /* Products */,
 			);
@@ -159,6 +175,8 @@
 				9E09280A3025FE0100FE4DE3 /* ScalableIOSAppTemplate */,
 				9E09283B3026006F00FE4DE3 /* Config */,
 				9E09285630260C6A00FE4DE3 /* Packages */,
+				9E09290B3029C97900FE4DE3 /* Documentation */,
+				9E0929133029D34E00FE4DE3 /* Scripts */,
 			);
 			name = ScalableIOSAppTemplate;
 			packageProductDependencies = (
@@ -462,7 +480,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ScalableIOSAppTemplate/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Scalable iOS App Template";
+				INFOPLIST_KEY_CFBundleDisplayName = "$(APP_DISPLAY_NAME)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -473,7 +491,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = testStreamApp.ScalableIOSAppTemplate;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -495,7 +513,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ScalableIOSAppTemplate/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Scalable iOS App Template";
+				INFOPLIST_KEY_CFBundleDisplayName = "$(APP_DISPLAY_NAME)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -506,7 +524,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = testStreamApp.ScalableIOSAppTemplate;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
