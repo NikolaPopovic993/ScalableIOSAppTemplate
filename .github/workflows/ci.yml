@@ -1,0 +1,54 @@
+name: PR CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate shell scripts
+        run: |
+          for script in Scripts/*.sh; do
+            echo "Validating $script"
+            bash -n "$script"
+          done
+
+      - name: Validate SharedPackage manifest
+        run: |
+          swift package \
+            --package-path Packages/SharedPackage \
+            dump-package >/dev/null
+
+      - name: Validate FeaturesPackage manifest
+        run: |
+          swift package \
+            --package-path Packages/FeaturesPackage \
+            dump-package >/dev/null
+
+      - name: Build iOS application
+        run: |
+          xcodebuild \
+            -project ScalableIOSAppTemplate.xcodeproj \
+            -scheme ScalableIOSAppTemplate \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Run tests
+        run: |
+          xcodebuild \
+            -project ScalableIOSAppTemplate.xcodeproj \
+            -scheme ScalableIOSAppTemplate \
+            -testPlan ScalableIOSAppTemplate \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
+            CODE_SIGNING_ALLOWED=NO \
+            test
