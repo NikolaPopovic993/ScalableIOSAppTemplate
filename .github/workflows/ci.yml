@@ -1,0 +1,21 @@
+name: PR CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify runner
+        run: |
+          echo "GitHub Actions runner is working"
+          sw_vers
+          xcodebuild -version
