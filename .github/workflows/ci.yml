@@ -49,6 +49,12 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build
 
-      - name: List available iOS simulators
+      - name: Run tests
         run: |
-          xcrun simctl list devices available
+          xcodebuild \
+            -project ScalableIOSAppTemplate.xcodeproj \
+            -scheme ScalableIOSAppTemplate \
+            -testPlan ScalableIOSAppTemplate \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
+            CODE_SIGNING_ALLOWED=NO \
+            test
