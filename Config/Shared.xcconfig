@@ -2,18 +2,14 @@
 //  Shared.xcconfig
 //  ScalableIOSAppTemplate
 //
-//  Created by Nikola Popovic on 7. 8. 2026..
-//
 
 APP_DISPLAY_NAME = Scalable iOS App Template
 APP_BUNDLE_IDENTIFIER = com.example.ScalableIOSAppTemplate
-
-API_SCHEME = https
-API_HOST = dummyjson.com
 
 PRODUCT_BUNDLE_IDENTIFIER = $(APP_BUNDLE_IDENTIFIER)
 INFOPLIST_KEY_CFBundleDisplayName = $(APP_DISPLAY_NAME)
 
 MARKETING_VERSION = 1.0.0
 CURRENT_PROJECT_VERSION = 1
+
 IPHONEOS_DEPLOYMENT_TARGET = 17.0
