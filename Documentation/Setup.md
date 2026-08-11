@@ -144,6 +144,9 @@ These values are reflected through the `.xcconfig` based configuration system.
 The setup workflow should preserve existing local secret configuration rather
 than replacing it unnecessarily.
 
+The initial API scheme and host are written to both default environment files.
+After setup, Development and Production can be configured independently.
+
 ---
 
 # Configuration Files
@@ -152,88 +155,121 @@ Configuration files live inside:
 
 ```text
 Config/
+├── Environments/
+│   ├── Development.xcconfig
+│   └── Production.xcconfig
 ├── Shared.xcconfig
 ├── Debug.xcconfig
 ├── Release.xcconfig
 └── Secrets.example.xcconfig
 ```
 
-These files separate build configuration from Swift implementation code.
+The template separates Xcode build configurations from application
+environments.
+
+By default:
+
+```text
+Debug   → Development
+Release → Production
+```
+
+These mappings are defaults only. Additional environments such as Staging, QA,
+Demo, or Local can be introduced when the application requires them.
+
+For the full configuration model see:
+
+[Configuration](Configuration.md)
 
 ---
 
 ## Shared.xcconfig
 
-`Shared.xcconfig` contains values shared between build configurations.
+`Shared.xcconfig` contains application-wide values that do not depend on the
+selected environment.
 
 Typical examples include:
 
 ```text
 APP_DISPLAY_NAME
 APP_BUNDLE_IDENTIFIER
-API_SCHEME
-API_HOST
 MARKETING_VERSION
 CURRENT_PROJECT_VERSION
 IPHONEOS_DEPLOYMENT_TARGET
 ```
 
-Values that are identical between Debug and Release should generally live here.
+Environment-specific values such as `APP_ENVIRONMENT`, `API_SCHEME`, and
+`API_HOST` should live inside the corresponding environment file.
+
+---
+
+## Environment Configuration
+
+The default environment files are:
+
+```text
+Config/Environments/Development.xcconfig
+Config/Environments/Production.xcconfig
+```
+
+For example:
+
+```text
+APP_ENVIRONMENT = development
+API_SCHEME = https
+API_HOST = dummyjson.com
+```
+
+A real application can configure Development and Production independently or
+add additional environment files later.
 
 ---
 
 ## Debug.xcconfig
 
-`Debug.xcconfig` contains development-oriented configuration.
+`Debug.xcconfig` composes shared configuration with the default Development
+environment and Debug-oriented settings.
 
-For example, Debug may configure:
+For example:
 
 ```text
-Development environment
-Development API configuration
-Additional logging
-Debug-specific behavior
-```
+#include "Shared.xcconfig"
+#include "Environments/Development.xcconfig"
 
-The exact values remain application-specific.
+ENABLE_APP_LOGGING = YES
+```
 
 ---
 
 ## Release.xcconfig
 
-`Release.xcconfig` contains production-oriented configuration.
+`Release.xcconfig` composes shared configuration with the default Production
+environment and Release-oriented settings.
 
 For example:
 
 ```text
-Production environment
-Production API configuration
-Reduced debug logging
-Release-specific behavior
+#include "Shared.xcconfig"
+#include "Environments/Production.xcconfig"
+
+ENABLE_APP_LOGGING = NO
 ```
 
-Build configuration and backend environment are related concepts but are not
-the same thing.
-
-The template currently provides Debug and Release as the default build
-configurations.
-
-Projects may later introduce additional environments such as:
-
-```text
-Development
-Staging
-QA
-Production
-```
-
-when required.
+Build configuration and application environment are separate concepts. The
+default mapping can be changed or expanded as the project grows.
 
 ---
 
 # API Configuration
 
-API configuration is split into components such as:
+API configuration is environment-specific and lives inside the corresponding
+file under:
+
+```text
+Config/Environments/
+```
+
+It is split into components such as:
 
 ```text
 API_SCHEME
@@ -252,8 +288,8 @@ API_HOST = api.example.com
 This avoids issues caused by `//` being interpreted as comment syntax inside
 `.xcconfig` files.
 
-Swift application configuration can combine those values when constructing the
-base URL.
+`AppConfiguration` combines these values when constructing the runtime base
+URL.
 
 ---
 
