@@ -1,146 +1,68 @@
 # Scalable iOS App Template
 
-A modular iOS application template built with SwiftUI, Swift Package Manager,
-initializer-based dependency injection, and a pragmatic Clean Architecture
-approach.
+A production-oriented iOS application template built with SwiftUI, Swift
+Package Manager, feature-first modularization, explicit dependency injection,
+and pragmatic Clean Architecture principles.
 
-The template provides a scalable starting point for production iOS
-applications without introducing unnecessary abstractions before they are
-needed.
+The template is designed for applications that may grow over time while
+keeping feature ownership, dependencies, testing, and project setup explicit.
 
 ## Highlights
 
+- SwiftUI application structure
 - Feature-first modularization
-- Compiler-enforced module boundaries
-- Clean Architecture separation
-- MVVM presentation
-- Swift Package Manager
+- Flexible feature composition
+- Swift Package Manager target boundaries
+- Pragmatic Clean Architecture
+- MVVM where presentation state requires it
 - Initializer-based dependency injection
-- Application and feature composition roots
-- Automated project bootstrap
-- Automated feature generation
-- Configurable feature dependencies
-- Explicit layer-specific dependencies
-- `.xcconfig` based configuration
-- Local secrets handling
-- Swift Testing
-- Xcode Test Plans
-- Reusable external infrastructure packages
-
----
+- Application Composition Root
+- Reusable `SharedPackage`
+- Remote `CoreNetworking` dependency
+- Feature generator
+- Environment configuration with `.xcconfig`
+- Bootstrap and project rename scripts
+- GitHub Actions pull request CI
+- Xcode Test Plan
+- Unit-test friendly architecture
 
 ## Requirements
 
-- macOS
-- Xcode with Swift 6.3 support
-- iOS 17+
-- Swift Package Manager
-
----
-
-## Quick Start
-
-Create a new repository using:
+The template targets:
 
 ```text
-Use this template
-→ Create a new repository
+iOS 17+
 ```
 
-Clone it:
+The project uses modern Swift and Swift Package Manager tooling.
 
-```bash
-git clone <your-repository-url>
-cd <your-repository>
-```
+Use a recent Xcode version capable of building the Swift toolchain declared by
+the packages.
 
-Run:
+## Getting Started
+
+The fastest way to start a new project is to create a fresh copy of the
+repository and run:
 
 ```bash
 ./Scripts/bootstrap.sh
 ```
 
-Bootstrap asks for:
+The bootstrap workflow combines the initial project rename and application
+configuration steps.
 
-```text
-Technical project name
-Application display name
-Bundle identifier
-API scheme
-API host
-```
+It is intended to be run from a clean Git working tree.
 
-Example:
+For detailed setup instructions see:
 
-```text
-Technical project name: Biologer
-Application display name: Biologer
-Bundle identifier: rs.biologer.app
-API scheme: https
-API host: dummyjson.com
-```
-
-After confirmation, the script renames and configures the application.
-
-Then:
-
-```text
-1. Open the generated .xcodeproj
-2. Review Config/Secrets.xcconfig
-3. Select a Development Team if required
-4. Build and run
-5. Run tests with ⌘ + U
-```
-
-For detailed setup documentation:
-
-[Project Setup](Documentation/Setup.md)
-
----
+[Setup](Documentation/Setup.md)
 
 ## Project Structure
 
+The repository is organized approximately as:
+
 ```text
 ScalableIOSAppTemplate/
-│
-├── Config/
-│   ├── Debug.xcconfig
-│   ├── Release.xcconfig
-│   ├── Shared.xcconfig
-│   └── Secrets.example.xcconfig
-│
-├── Documentation/
-│   ├── Architecture.md
-│   ├── FeatureGenerator.md
-│   └── Setup.md
-│
-├── Packages/
-│   │
-│   ├── SharedPackage/
-│   │   ├── Sources/
-│   │   │   ├── SharedUI/
-│   │   │   └── SharedUtilities/
-│   │   └── Tests/
-│   │
-│   └── FeaturesPackage/
-│       ├── Sources/
-│       │   └── Authentication/
-│       │       ├── Domain/
-│       │       ├── Data/
-│       │       ├── Interface/
-│       │       └── Assembly/
-│       │
-│       └── Tests/
-│           └── Authentication/
-│               ├── DomainTests/
-│               └── DataTests/
-│
-├── Scripts/
-│   ├── bootstrap.sh
-│   ├── generate_feature.sh
-│   ├── rename_project.sh
-│   └── setup.sh
-│
 ├── ScalableIOSAppTemplate/
 │   └── App/
 │       ├── AppEntry/
@@ -149,231 +71,535 @@ ScalableIOSAppTemplate/
 │       ├── Navigation/
 │       └── Resources/
 │
-├── ScalableIOSAppTemplateTests/
-├── ScalableIOSAppTemplateUITests/
+├── Packages/
+│   ├── FeaturesPackage/
+│   └── SharedPackage/
 │
-├── ScalableIOSAppTemplate.xctestplan
-├── README.md
-└── LICENSE
+├── Config/
+│   ├── Shared.xcconfig
+│   ├── Debug.xcconfig
+│   ├── Release.xcconfig
+│   └── Secrets.example.xcconfig
+│
+├── Documentation/
+│   ├── Architecture.md
+│   ├── CI.md
+│   ├── FeatureGenerator.md
+│   └── Setup.md
+│
+├── Scripts/
+│   ├── bootstrap.sh
+│   ├── generate_feature.sh
+│   ├── rename_project.sh
+│   └── setup.sh
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
+└── ScalableIOSAppTemplate.xctestplan
 ```
-
----
 
 ## Architecture
 
-Features use a feature-first physical structure:
+The template uses feature-first modularization with optional
+compiler-enforced architectural boundaries:
+
+```text
+Domain
+Data
+Interface
+Assembly
+```
+
+A feature does not need to contain every module.
+
+Use only the modules that provide meaningful separation for that feature.
+
+For example:
+
+```text
+Authentication
+├── Domain
+├── Data
+├── Interface
+└── Assembly
+```
+
+while a simple feature may contain only:
+
+```text
+About
+└── Interface
+```
+
+and a background capability may use:
+
+```text
+BackgroundSync
+├── Domain
+├── Data
+└── Assembly
+```
+
+The architecture is intentionally pragmatic.
+
+Do not introduce layers that do not provide meaningful ownership, dependency,
+testing, or composition boundaries.
+
+For the full architectural description see:
+
+[Architecture](Documentation/Architecture.md)
+
+## FeaturesPackage
+
+Application features live inside:
+
+```text
+Packages/FeaturesPackage
+```
+
+The package is physically organized by feature.
+
+For example:
 
 ```text
 Sources/
-└── Profile/
+└── Authentication/
     ├── Domain/
     ├── Data/
     ├── Interface/
     └── Assembly/
 ```
 
-Each layer remains a separate Swift target:
+Swift Package Manager still treats these directories as independent targets:
 
 ```text
-ProfileDomain
-ProfileData
-ProfileInterface
-ProfileAssembly
+AuthenticationDomain
+AuthenticationData
+AuthenticationInterface
+AuthenticationAssembly
 ```
 
-This provides readable feature ownership while preserving compiler-enforced
-boundaries.
+This gives the project feature-oriented organization while preserving
+compiler-enforced dependency boundaries.
 
-For detailed architecture rules:
+## Flexible Feature Composition
 
-[Architecture](Documentation/Architecture.md)
+Feature architecture can grow incrementally.
 
----
+A feature can start with:
 
-## Generate a Feature
+```text
+Profile
+├── Domain
+└── Data
+```
 
-Run:
+and later become:
+
+```text
+Profile
+├── Domain
+├── Data
+└── Interface
+```
+
+and, if dependency composition becomes complex enough:
+
+```text
+Profile
+├── Domain
+├── Data
+├── Interface
+└── Assembly
+```
+
+The structure selected when a feature is created is not permanent.
+
+## Feature Generator
+
+Create a new feature interactively:
 
 ```bash
 ./Scripts/generate_feature.sh
 ```
 
-Example:
+or from the command line:
 
-```text
-Feature name: Profile
-Use CoreNetworking? Y
-Use SharedUI? Y
-Create Domain and Data tests? Y
+```bash
+./Scripts/generate_feature.sh \
+    --name Profile \
+    --modules domain,data,interface,assembly \
+    --networking \
+    --tests \
+    --yes
 ```
 
-The generator creates:
+Features can contain only the architectural modules they actually need.
+
+Examples:
 
 ```text
-Sources/Profile/
-├── Domain/
-├── Data/
-├── Interface/
-└── Assembly/
-
-Tests/Profile/
-├── DomainTests/
-└── DataTests/
+About
+└── Interface
 ```
 
-and automatically registers the feature in `FeaturesPackage`.
+```text
+Calculator
+├── Domain
+└── Interface
+```
 
-For all generator options:
+```text
+BackgroundSync
+├── Domain
+├── Data
+└── Assembly
+```
+
+The generator supports:
+
+```text
+domain
+data
+interface
+assembly
+all
+```
+
+as module selections.
+
+Feature modules can also be added manually later as the feature grows.
+
+For complete generator documentation see:
 
 [Feature Generator](Documentation/FeatureGenerator.md)
 
----
+## Feature Configuration
 
-## Feature Manifest
+Features are registered inside:
 
-Features are registered declaratively:
+```text
+Packages/FeaturesPackage/Package.swift
+```
+
+using `FeatureConfiguration`.
+
+For example:
 
 ```swift
 FeatureConfiguration(
     name: "Authentication",
+    modules: [
+        .domain,
+        .data,
+        .interface,
+        .assembly
+    ],
     usesNetworking: true,
-    usesSharedUI: true,
-    hasTests: true
-)
-```
-
-The manifest generates products, targets, paths, common dependencies, and
-optional test targets.
-
-Feature-specific dependencies can be added explicitly to the layer that
-requires them.
-
-Example:
-
-```swift
-FeatureConfiguration(
-    name: "Profile",
-    usesNetworking: true,
-    usesSharedUI: true,
     hasTests: true,
-    dataDependencies: [
+    interfaceDependencies: [
         .product(
-            name: "SharedUtilities",
+            name: "SharedUI",
             package: "SharedPackage"
         )
     ]
 )
 ```
 
-This makes `SharedUtilities` available to `ProfileData` without exposing it
-to every other Profile module.
+The configuration determines:
 
----
+```text
+Which modules exist
+Whether CoreNetworking is required
+Whether supported test targets are created
+Which additional dependencies each module requires
+```
+
+Additional dependencies are explicit:
+
+```swift
+domainDependencies
+dataDependencies
+interfaceDependencies
+assemblyDependencies
+```
+
+This avoids creating configuration flags for every possible dependency.
 
 ## SharedPackage
 
-`SharedPackage` contains application-specific code that is genuinely shared
-between features.
+Application-specific reusable code lives inside:
 
-Current modules:
+```text
+Packages/SharedPackage
+```
+
+The package currently provides modules such as:
 
 ```text
 SharedUI
 SharedUtilities
 ```
 
-Feature-specific code should remain owned by its feature.
-
-Generic libraries intended for reuse across multiple applications should
-preferably live in separate repositories and be integrated through Swift
-Package Manager.
-
----
-
-## Dependency Strategy
-
-The template follows this general rule:
+Use the following ownership rule:
 
 ```text
-Used only by one feature
-        ↓
-Keep inside the feature
+Used by one feature
+→ keep inside the feature
 
-Application-specific and shared by multiple features
-        ↓
-SharedPackage
+App-specific and shared between features
+→ SharedPackage
 
 Generic and reusable across applications
-        ↓
-Separate Swift Package
+→ separate reusable Swift package
 ```
 
-Common dependencies such as `CoreNetworking` and `SharedUI` can be configured
-through the feature generator.
+`SharedPackage` should not become a dumping ground for unrelated code.
 
-More specific dependencies are added explicitly to the feature layer that
-consumes them.
+## Reusable Packages
 
----
+Generic libraries that can be reused across applications should remain
+independent Swift packages.
 
-## Example Authentication Feature
+The template currently integrates:
 
-Authentication is included as a reference implementation demonstrating:
+```text
+CoreNetworking
+```
 
-- Domain models
-- Repository abstractions
-- Use cases
-- DTOs
-- Endpoints
-- Mapping
-- Repository implementations
-- ViewModels
-- SwiftUI Views
-- Feature Assembly
-- Networking integration
-- Shared UI integration
-- Domain tests
-- Data tests
+as a remote Swift Package dependency.
 
-It can be adapted or removed when starting a real application.
+Feature infrastructure can opt into it using:
 
----
+```swift
+usesNetworking: true
+```
+
+The networking dependency is kept outside Domain and presentation concerns.
+
+## Dependency Injection
+
+The preferred dependency injection approach is:
+
+```text
+Initializer Injection
+```
+
+Application-level dependencies are created in the Composition Root and passed
+to the modules that require them.
+
+The application should avoid using global singletons or SwiftUI Environment as
+a general-purpose service locator.
+
+## Composition Root
+
+Top-level dependency composition belongs to the application.
+
+The primary composition object is:
+
+```text
+AppContainer
+```
+
+It is responsible for creating and connecting application-level dependencies
+and feature entry points.
+
+Feature-level dependency construction may additionally live inside a feature's
+Assembly module when such a boundary provides value.
+
+## Using Feature Products
+
+Adding a feature to `FeaturesPackage` creates its SwiftPM products, but the host
+application target should explicitly depend on the product it uses.
+
+For example:
+
+```text
+About
+└── AboutInterface
+```
+
+can be exposed to the application by adding:
+
+```text
+AboutInterface
+```
+
+to the application target.
+
+The application can then:
+
+```swift
+import AboutInterface
+```
+
+A more complex feature may expose its entry point through:
+
+```text
+AuthenticationAssembly
+```
+
+This keeps application dependencies explicit.
+
+## Configuration
+
+Application configuration is managed through `.xcconfig` files:
+
+```text
+Config/
+├── Shared.xcconfig
+├── Debug.xcconfig
+├── Release.xcconfig
+└── Secrets.example.xcconfig
+```
+
+Configuration can include values such as:
+
+```text
+Application display name
+Bundle identifier
+API scheme
+API host
+Application version
+Build number
+Environment
+Logging configuration
+```
+
+Avoid storing real secrets in tracked configuration files.
+
+See:
+
+[Setup](Documentation/Setup.md)
+
+for configuration details.
 
 ## Testing
 
-The project uses Swift Testing.
-
-Current examples include:
+The repository uses an Xcode Test Plan:
 
 ```text
-SharedUtilitiesTests
-AuthenticationDomainTests
-AuthenticationDataTests
+ScalableIOSAppTemplate.xctestplan
 ```
 
-Run the configured Xcode Test Plan with:
+Feature tests are organized next to their owning feature inside
+`FeaturesPackage`.
+
+The default feature generator currently supports:
 
 ```text
-⌘ + U
+DomainTests
+DataTests
 ```
 
-When new feature test targets are generated, verify that they are included in
-the Xcode Test Plan when required.
+when their corresponding modules exist.
 
----
+Tests should follow module responsibilities.
+
+For example:
+
+```text
+DomainTests
+→ business rules, validation, use cases
+
+DataTests
+→ repositories, DTO mapping, persistence, networking behavior
+```
+
+## Continuous Integration
+
+Pull requests targeting `main` are validated with GitHub Actions.
+
+The standard PR CI verifies:
+
+```text
+Shell script syntax
+SharedPackage manifest
+FeaturesPackage manifest
+iOS application build
+Configured tests
+```
+
+The workflow is located at:
+
+```text
+.github/workflows/ci.yml
+```
+
+Deployment, signing, Fastlane, TestFlight, and App Store delivery are
+intentionally outside the standard template CI.
+
+For details see:
+
+[Continuous Integration](Documentation/CI.md)
+
+## Scripts
+
+The repository includes several developer workflow scripts.
+
+### Bootstrap
+
+```bash
+./Scripts/bootstrap.sh
+```
+
+Performs the initial project bootstrap workflow.
+
+### Rename Project
+
+```bash
+./Scripts/rename_project.sh
+```
+
+Renames the template project.
+
+### Configure Project
+
+```bash
+./Scripts/setup.sh
+```
+
+Configures application-specific values.
+
+### Generate Feature
+
+```bash
+./Scripts/generate_feature.sh
+```
+
+Creates the initial structure for a feature.
+
+See the detailed documentation before modifying these scripts because some of
+them intentionally require a clean Git working tree.
 
 ## Documentation
 
-Detailed documentation:
+Detailed documentation is kept outside the README so the repository overview
+remains concise.
 
 - [Architecture](Documentation/Architecture.md)
 - [Feature Generator](Documentation/FeatureGenerator.md)
-- [Project Setup](Documentation/Setup.md)
+- [Setup](Documentation/Setup.md)
+- [Continuous Integration](Documentation/CI.md)
 
----
+## Design Philosophy
 
-## License
+The template is designed around one central idea:
 
-This project is available under the MIT License.
+> Architecture should provide useful boundaries without forcing unnecessary
+> layers.
 
-See [LICENSE](LICENSE) for details.
+Start small.
+
+Keep feature ownership explicit.
+
+Introduce dependencies deliberately.
+
+Add modules when feature responsibilities justify them.
+
+Extract reusable packages when reuse actually exists.
+
+The template provides structure for growth without requiring every feature to
+start with maximum complexity.
