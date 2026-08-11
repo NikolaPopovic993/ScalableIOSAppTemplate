@@ -19,3 +19,10 @@ jobs:
           echo "GitHub Actions runner is working"
           sw_vers
           xcodebuild -version
+
+      - name: Validate shell scripts
+        run: |
+          for script in Scripts/*.sh; do
+            echo "Validating $script"
+            bash -n "$script"
+          done
