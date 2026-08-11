@@ -21,7 +21,6 @@ struct FeatureConfiguration {
     let modules: [FeatureModule]
 
     let usesNetworking: Bool
-    let usesSharedUI: Bool
     let hasTests: Bool
 
     let domainDependencies: [Target.Dependency]
@@ -38,7 +37,6 @@ struct FeatureConfiguration {
             .assembly
         ],
         usesNetworking: Bool,
-        usesSharedUI: Bool,
         hasTests: Bool,
         domainDependencies: [Target.Dependency] = [],
         dataDependencies: [Target.Dependency] = [],
@@ -53,7 +51,6 @@ struct FeatureConfiguration {
         self.name = name
         self.modules = modules
         self.usesNetworking = usesNetworking
-        self.usesSharedUI = usesSharedUI
         self.hasTests = hasTests
         self.domainDependencies = domainDependencies
         self.dataDependencies = dataDependencies
@@ -61,7 +58,7 @@ struct FeatureConfiguration {
         self.assemblyDependencies = assemblyDependencies
     }
 
-    // MARK: Target Names
+    // MARK: - Target Names
 
     var domainTargetName: String {
         "\(name)Domain"
@@ -87,7 +84,7 @@ struct FeatureConfiguration {
         "\(name)DataTests"
     }
 
-    // MARK: Products
+    // MARK: - Products
 
     var products: [Product] {
         enabledModules.map { module in
@@ -102,11 +99,11 @@ struct FeatureConfiguration {
         }
     }
 
-    // MARK: Targets
+    // MARK: - Targets
 
     var targets: [Target] {
-        var result = enabledModules.map {
-            makeTarget(for: $0)
+        var result = enabledModules.map { module in
+            makeTarget(for: module)
         }
 
         if hasTests {
@@ -126,11 +123,11 @@ struct FeatureConfiguration {
         return result
     }
 
-    // MARK: Enabled Modules
+    // MARK: - Enabled Modules
 
     private var enabledModules: [FeatureModule] {
-        FeatureModule.allCases.filter {
-            modules.contains($0)
+        FeatureModule.allCases.filter { module in
+            modules.contains(module)
         }
     }
 
@@ -140,47 +137,47 @@ struct FeatureConfiguration {
         modules.contains(module)
     }
 
-    // MARK: Module Information
+    // MARK: - Module Information
 
     private func targetName(
         for module: FeatureModule
     ) -> String {
         switch module {
         case .domain:
-            domainTargetName
+            return domainTargetName
 
         case .data:
-            dataTargetName
+            return dataTargetName
 
         case .interface:
-            interfaceTargetName
+            return interfaceTargetName
 
         case .assembly:
-            assemblyTargetName
+            return assemblyTargetName
         }
     }
 
-    // MARK: Target Factory
+    // MARK: - Target Factory
 
     private func makeTarget(
         for module: FeatureModule
     ) -> Target {
         switch module {
         case .domain:
-            makeDomainTarget()
+            return makeDomainTarget()
 
         case .data:
-            makeDataTarget()
+            return makeDataTarget()
 
         case .interface:
-            makeInterfaceTarget()
+            return makeInterfaceTarget()
 
         case .assembly:
-            makeAssemblyTarget()
+            return makeAssemblyTarget()
         }
     }
 
-    // MARK: Domain
+    // MARK: - Domain
 
     private func makeDomainTarget() -> Target {
         .target(
@@ -190,7 +187,7 @@ struct FeatureConfiguration {
         )
     }
 
-    // MARK: Data
+    // MARK: - Data
 
     private func makeDataTarget() -> Target {
         var dependencies: [Target.Dependency] = []
@@ -223,7 +220,7 @@ struct FeatureConfiguration {
         )
     }
 
-    // MARK: Interface
+    // MARK: - Interface
 
     private func makeInterfaceTarget() -> Target {
         var dependencies: [Target.Dependency] = []
@@ -240,15 +237,6 @@ struct FeatureConfiguration {
             contentsOf: interfaceDependencies
         )
 
-        if usesSharedUI {
-            dependencies.append(
-                .product(
-                    name: "SharedUI",
-                    package: "SharedPackage"
-                )
-            )
-        }
-
         return .target(
             name: interfaceTargetName,
             dependencies: dependencies,
@@ -256,7 +244,7 @@ struct FeatureConfiguration {
         )
     }
 
-    // MARK: Assembly
+    // MARK: - Assembly
 
     private func makeAssemblyTarget() -> Target {
         var dependencies: [Target.Dependency] = []
@@ -305,7 +293,7 @@ struct FeatureConfiguration {
         )
     }
 
-    // MARK: Domain Tests
+    // MARK: - Domain Tests
 
     private func makeDomainTestsTarget() -> Target {
         .testTarget(
@@ -319,7 +307,7 @@ struct FeatureConfiguration {
         )
     }
 
-    // MARK: Data Tests
+    // MARK: - Data Tests
 
     private func makeDataTestsTarget() -> Target {
         var dependencies: [Target.Dependency] = [
@@ -366,8 +354,13 @@ let features: [FeatureConfiguration] = [
             .assembly
         ],
         usesNetworking: true,
-        usesSharedUI: true,
-        hasTests: true
+        hasTests: true,
+        interfaceDependencies: [
+            .product(
+                name: "SharedUI",
+                package: "SharedPackage"
+            )
+        ]
     ),
 
     // FEATURE_GENERATOR_FEATURES
