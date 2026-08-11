@@ -79,14 +79,16 @@ private extension AppConfiguration {
             let value = bundle.object(
                 forInfoDictionaryKey: Key.environment
             ) as? String,
-            let environment = AppEnvironment(rawValue: value)
+            !value.isEmpty
         else {
             preconditionFailure(
-                "Missing or invalid \(Key.environment) configuration."
+                "Missing \(Key.environment) configuration."
             )
         }
 
-        return environment
+        return AppEnvironment(
+            rawValue: value
+        )
     }
 
     static func readLoggingEnabled(
