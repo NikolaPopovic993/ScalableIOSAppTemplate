@@ -368,7 +368,8 @@ Detailed documentation:
 
 - [Architecture](Documentation/Architecture.md)
 - [Feature Generator](Documentation/FeatureGenerator.md)
-- [Project Setup](Documentation/Setup.md)
+- [Setup](Documentation/Setup.md)
+- [Continuous Integration](Documentation/CI.md)
 
 ---
 
