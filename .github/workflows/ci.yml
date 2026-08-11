@@ -14,19 +14,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify runner
-        run: |
-          echo "GitHub Actions runner is working"
-          sw_vers
-          xcodebuild -version
-
       - name: Validate shell scripts
         run: |
           for script in Scripts/*.sh; do
             echo "Validating $script"
             bash -n "$script"
           done
-          
+
       - name: Validate SharedPackage manifest
         run: |
           swift package \
