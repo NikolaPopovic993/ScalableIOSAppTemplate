@@ -26,3 +26,9 @@ jobs:
             echo "Validating $script"
             bash -n "$script"
           done
+          
+      - name: Validate SharedPackage manifest
+        run: |
+          swift package \
+            --package-path Packages/SharedPackage \
+            dump-package >/dev/null
