@@ -2,13 +2,25 @@
 
 import PackageDescription
 
+// MARK: - Feature Module
+
+enum FeatureModule: CaseIterable {
+
+    case domain
+    case data
+    case interface
+    case assembly
+}
+
+
 // MARK: - Feature Configuration
 
 struct FeatureConfiguration {
 
     let name: String
+    let modules: [FeatureModule]
+
     let usesNetworking: Bool
-    let usesSharedUI: Bool
     let hasTests: Bool
 
     let domainDependencies: [Target.Dependency]
@@ -18,23 +30,35 @@ struct FeatureConfiguration {
 
     init(
         name: String,
+        modules: [FeatureModule] = [
+            .domain,
+            .data,
+            .interface,
+            .assembly
+        ],
         usesNetworking: Bool,
-        usesSharedUI: Bool,
         hasTests: Bool,
         domainDependencies: [Target.Dependency] = [],
         dataDependencies: [Target.Dependency] = [],
         interfaceDependencies: [Target.Dependency] = [],
         assemblyDependencies: [Target.Dependency] = []
     ) {
+        precondition(
+            !modules.isEmpty,
+            "Feature '\(name)' must contain at least one module."
+        )
+
         self.name = name
+        self.modules = modules
         self.usesNetworking = usesNetworking
-        self.usesSharedUI = usesSharedUI
         self.hasTests = hasTests
         self.domainDependencies = domainDependencies
         self.dataDependencies = dataDependencies
         self.interfaceDependencies = interfaceDependencies
         self.assemblyDependencies = assemblyDependencies
     }
+
+    // MARK: - Target Names
 
     var domainTargetName: String {
         "\(name)Domain"
@@ -60,53 +84,100 @@ struct FeatureConfiguration {
         "\(name)DataTests"
     }
 
+    // MARK: - Products
+
     var products: [Product] {
-        [
-            .library(
-                name: domainTargetName,
-                targets: [
-                    domainTargetName
-                ]
-            ),
+        enabledModules.map { module in
+            let targetName = targetName(for: module)
 
-            .library(
-                name: dataTargetName,
+            return .library(
+                name: targetName,
                 targets: [
-                    dataTargetName
-                ]
-            ),
-
-            .library(
-                name: interfaceTargetName,
-                targets: [
-                    interfaceTargetName
-                ]
-            ),
-
-            .library(
-                name: assemblyTargetName,
-                targets: [
-                    assemblyTargetName
+                    targetName
                 ]
             )
-        ]
+        }
     }
+
+    // MARK: - Targets
 
     var targets: [Target] {
-        var targets: [Target] = [
-            makeDomainTarget(),
-            makeDataTarget(),
-            makeInterfaceTarget(),
-            makeAssemblyTarget()
-        ]
-
-        if hasTests {
-            targets.append(makeDomainTestsTarget())
-            targets.append(makeDataTestsTarget())
+        var result = enabledModules.map { module in
+            makeTarget(for: module)
         }
 
-        return targets
+        if hasTests {
+            if contains(.domain) {
+                result.append(
+                    makeDomainTestsTarget()
+                )
+            }
+
+            if contains(.data) {
+                result.append(
+                    makeDataTestsTarget()
+                )
+            }
+        }
+
+        return result
     }
+
+    // MARK: - Enabled Modules
+
+    private var enabledModules: [FeatureModule] {
+        FeatureModule.allCases.filter { module in
+            modules.contains(module)
+        }
+    }
+
+    private func contains(
+        _ module: FeatureModule
+    ) -> Bool {
+        modules.contains(module)
+    }
+
+    // MARK: - Module Information
+
+    private func targetName(
+        for module: FeatureModule
+    ) -> String {
+        switch module {
+        case .domain:
+            return domainTargetName
+
+        case .data:
+            return dataTargetName
+
+        case .interface:
+            return interfaceTargetName
+
+        case .assembly:
+            return assemblyTargetName
+        }
+    }
+
+    // MARK: - Target Factory
+
+    private func makeTarget(
+        for module: FeatureModule
+    ) -> Target {
+        switch module {
+        case .domain:
+            return makeDomainTarget()
+
+        case .data:
+            return makeDataTarget()
+
+        case .interface:
+            return makeInterfaceTarget()
+
+        case .assembly:
+            return makeAssemblyTarget()
+        }
+    }
+
+    // MARK: - Domain
 
     private func makeDomainTarget() -> Target {
         .target(
@@ -116,14 +187,22 @@ struct FeatureConfiguration {
         )
     }
 
-    private func makeDataTarget() -> Target {
-        var dependencies: [Target.Dependency] = [
-            .target(
-                name: domainTargetName
-            )
-        ]
+    // MARK: - Data
 
-        dependencies.append(contentsOf: dataDependencies)
+    private func makeDataTarget() -> Target {
+        var dependencies: [Target.Dependency] = []
+
+        if contains(.domain) {
+            dependencies.append(
+                .target(
+                    name: domainTargetName
+                )
+            )
+        }
+
+        dependencies.append(
+            contentsOf: dataDependencies
+        )
 
         if usesNetworking {
             dependencies.append(
@@ -141,23 +220,22 @@ struct FeatureConfiguration {
         )
     }
 
+    // MARK: - Interface
+
     private func makeInterfaceTarget() -> Target {
-        var dependencies: [Target.Dependency] = [
-            .target(
-                name: domainTargetName
-            )
-        ]
+        var dependencies: [Target.Dependency] = []
 
-        dependencies.append(contentsOf: interfaceDependencies)
-
-        if usesSharedUI {
+        if contains(.domain) {
             dependencies.append(
-                .product(
-                    name: "SharedUI",
-                    package: "SharedPackage"
+                .target(
+                    name: domainTargetName
                 )
             )
         }
+
+        dependencies.append(
+            contentsOf: interfaceDependencies
+        )
 
         return .target(
             name: interfaceTargetName,
@@ -166,22 +244,38 @@ struct FeatureConfiguration {
         )
     }
 
+    // MARK: - Assembly
+
     private func makeAssemblyTarget() -> Target {
-        var dependencies: [Target.Dependency] = [
-            .target(
-                name: domainTargetName
-            ),
+        var dependencies: [Target.Dependency] = []
 
-            .target(
-                name: dataTargetName
-            ),
-
-            .target(
-                name: interfaceTargetName
+        if contains(.domain) {
+            dependencies.append(
+                .target(
+                    name: domainTargetName
+                )
             )
-        ]
+        }
 
-        dependencies.append(contentsOf: assemblyDependencies)
+        if contains(.data) {
+            dependencies.append(
+                .target(
+                    name: dataTargetName
+                )
+            )
+        }
+
+        if contains(.interface) {
+            dependencies.append(
+                .target(
+                    name: interfaceTargetName
+                )
+            )
+        }
+
+        dependencies.append(
+            contentsOf: assemblyDependencies
+        )
 
         if usesNetworking {
             dependencies.append(
@@ -199,6 +293,8 @@ struct FeatureConfiguration {
         )
     }
 
+    // MARK: - Domain Tests
+
     private func makeDomainTestsTarget() -> Target {
         .testTarget(
             name: domainTestsTargetName,
@@ -211,16 +307,22 @@ struct FeatureConfiguration {
         )
     }
 
+    // MARK: - Data Tests
+
     private func makeDataTestsTarget() -> Target {
         var dependencies: [Target.Dependency] = [
-            .target(
-                name: domainTargetName
-            ),
-
             .target(
                 name: dataTargetName
             )
         ]
+
+        if contains(.domain) {
+            dependencies.append(
+                .target(
+                    name: domainTargetName
+                )
+            )
+        }
 
         if usesNetworking {
             dependencies.append(
@@ -245,9 +347,20 @@ struct FeatureConfiguration {
 let features: [FeatureConfiguration] = [
     FeatureConfiguration(
         name: "Authentication",
+        modules: [
+            .domain,
+            .data,
+            .interface,
+            .assembly
+        ],
         usesNetworking: true,
-        usesSharedUI: true,
-        hasTests: true
+        hasTests: true,
+        interfaceDependencies: [
+            .product(
+                name: "SharedUI",
+                package: "SharedPackage"
+            )
+        ]
     ),
 
     // FEATURE_GENERATOR_FEATURES
