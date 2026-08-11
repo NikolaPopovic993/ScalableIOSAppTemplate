@@ -38,3 +38,13 @@ jobs:
           swift package \
             --package-path Packages/FeaturesPackage \
             dump-package >/dev/null
+
+      - name: Build iOS application
+        run: |
+          xcodebuild \
+            -project ScalableIOSAppTemplate.xcodeproj \
+            -scheme ScalableIOSAppTemplate \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
