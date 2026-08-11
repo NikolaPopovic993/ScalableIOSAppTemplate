@@ -1,123 +1,154 @@
-# Project Setup
+# Setup
 
-The template provides scripts for preparing a new application from the GitHub
-template.
+This document describes how to create a new application from the template and
+configure the repository for development.
 
-The recommended entry point is:
+The recommended workflow is to start from a fresh copy of the repository and
+use the provided bootstrap script.
+
+## Before You Start
+
+The setup and rename scripts modify repository files.
+
+Run them from a clean Git working tree.
+
+Check:
+
+```bash
+git status
+```
+
+before starting.
+
+The expected result is:
+
+```text
+nothing to commit, working tree clean
+```
+
+Keeping the repository clean makes setup changes easy to inspect and recover
+from if necessary.
+
+---
+
+# Recommended Setup
+
+The recommended setup command is:
 
 ```bash
 ./Scripts/bootstrap.sh
 ```
 
----
+The bootstrap script combines the project rename and application configuration
+steps into a single workflow.
 
-# Bootstrap
+It is intended to be used when creating a new application from the template.
 
-Bootstrap combines:
+Conceptually:
 
 ```text
-Technical Xcode project rename
-+
+Fresh template
+    ↓
+bootstrap.sh
+    ↓
+Project rename
+    ↓
 Application configuration
+    ↓
+Configured project
 ```
 
-into one interactive workflow.
+The script presents the resolved configuration before applying changes.
 
-Run:
-
-```bash
-./Scripts/bootstrap.sh
-```
+Review the values carefully before confirming.
 
 ---
 
-## Bootstrap Input
+# What Bootstrap Configures
 
-The script asks for:
+The bootstrap workflow may configure application-specific values such as:
 
 ```text
-Technical project name
+Project name
 Application display name
 Bundle identifier
 API scheme
 API host
 ```
 
-Example:
+The exact generated values should be reviewed after setup.
 
-```text
-Technical project name:
-Biologer
-
-Application display name:
-Biologer
-
-Bundle identifier:
-rs.biologer.app
-
-API scheme:
-https
-
-API host:
-dummyjson.com
-```
-
-The script displays a summary before modifying any files.
+Application-specific configuration is stored through the project's
+configuration files rather than being scattered throughout Swift source code.
 
 ---
 
-# What Bootstrap Renames
+# Manual Setup
 
-Bootstrap performs the technical project rename through
-`rename_project.sh`.
+The bootstrap command is the preferred workflow, but rename and configuration
+can also be run independently.
+
+## Rename the Project
+
+Run:
+
+```bash
+./Scripts/rename_project.sh
+```
+
+The rename script updates the template project name and the related project
+references.
+
+It also supports non-interactive usage.
 
 For example:
 
-```text
-ScalableIOSAppTemplate.xcodeproj
-        ↓
-Biologer.xcodeproj
+```bash
+./Scripts/rename_project.sh \
+    --name MyApplication \
+    --yes
 ```
 
-It also updates:
+Use PascalCase for the application/project name.
+
+Examples:
 
 ```text
-Application target references
-Shared scheme
-Application source directory
-App entry file
-Unit test directory
-UI test directory
-Xcode Test Plan
-Project name references
+MyApplication
+WeatherApp
+GitHubClient
 ```
+
+After the rename completes, inspect:
+
+```bash
+git status
+```
+
+before continuing.
 
 ---
 
-# What Bootstrap Configures
+## Configure the Application
 
-Application-facing configuration is handled by:
+Application configuration can be updated with:
 
-```text
-setup.sh
+```bash
+./Scripts/setup.sh
 ```
 
-Values include:
+The setup script is responsible for application-specific configuration values.
 
-```text
-APP_DISPLAY_NAME
-APP_BUNDLE_IDENTIFIER
-API_SCHEME
-API_HOST
-```
+These values are reflected through the `.xcconfig` based configuration system.
 
-These values are stored through `.xcconfig` files.
+The setup workflow should preserve existing local secret configuration rather
+than replacing it unnecessarily.
 
 ---
 
-# Build Configuration
+# Configuration Files
 
-Configuration files:
+Configuration files live inside:
 
 ```text
 Config/
@@ -127,7 +158,15 @@ Config/
 └── Secrets.example.xcconfig
 ```
 
-Shared application configuration may include:
+These files separate build configuration from Swift implementation code.
+
+---
+
+## Shared.xcconfig
+
+`Shared.xcconfig` contains values shared between build configurations.
+
+Typical examples include:
 
 ```text
 APP_DISPLAY_NAME
@@ -139,204 +178,452 @@ CURRENT_PROJECT_VERSION
 IPHONEOS_DEPLOYMENT_TARGET
 ```
 
----
-
-## Debug
-
-Example:
-
-```text
-APP_ENVIRONMENT = development
-ENABLE_APP_LOGGING = YES
-```
+Values that are identical between Debug and Release should generally live here.
 
 ---
 
-## Release
+## Debug.xcconfig
 
-Example:
+`Debug.xcconfig` contains development-oriented configuration.
+
+For example, Debug may configure:
 
 ```text
-APP_ENVIRONMENT = production
-ENABLE_APP_LOGGING = NO
+Development environment
+Development API configuration
+Additional logging
+Debug-specific behavior
 ```
+
+The exact values remain application-specific.
+
+---
+
+## Release.xcconfig
+
+`Release.xcconfig` contains production-oriented configuration.
+
+For example:
+
+```text
+Production environment
+Production API configuration
+Reduced debug logging
+Release-specific behavior
+```
+
+Build configuration and backend environment are related concepts but are not
+the same thing.
+
+The template currently provides Debug and Release as the default build
+configurations.
+
+Projects may later introduce additional environments such as:
+
+```text
+Development
+Staging
+QA
+Production
+```
+
+when required.
+
+---
+
+# API Configuration
+
+API configuration is split into components such as:
+
+```text
+API_SCHEME
+API_HOST
+```
+
+instead of storing a complete URL in `.xcconfig`.
+
+For example:
+
+```text
+API_SCHEME = https
+API_HOST = api.example.com
+```
+
+This avoids issues caused by `//` being interpreted as comment syntax inside
+`.xcconfig` files.
+
+Swift application configuration can combine those values when constructing the
+base URL.
+
+---
+
+# Application Configuration
+
+Swift code should read configuration through the application's configuration
+abstraction rather than accessing configuration values throughout the codebase.
+
+Application configuration belongs under:
+
+```text
+App/Configuration/
+```
+
+Typical files include:
+
+```text
+AppConfiguration.swift
+AppEnvironment.swift
+```
+
+Conceptually:
+
+```text
+.xcconfig
+    ↓
+Build settings / Info configuration
+    ↓
+AppConfiguration
+    ↓
+Application dependencies
+```
+
+This keeps environment knowledge centralized.
 
 ---
 
 # Secrets
 
-The repository contains:
+Real secrets should not be committed to the repository.
+
+The repository provides:
 
 ```text
-Config/Secrets.example.xcconfig
+Secrets.example.xcconfig
 ```
 
-The setup workflow creates:
+as an example of the expected structure.
+
+If a project requires local secret configuration, create the corresponding
+local file according to the project's setup and keep it ignored by Git.
+
+Never commit values such as:
 
 ```text
-Config/Secrets.xcconfig
-```
-
-when necessary.
-
-`Secrets.xcconfig` is intentionally ignored by Git.
-
-Do not commit:
-
-```text
-API keys
-Private tokens
+Private API keys
 Signing credentials
-Private certificates
-Service credentials
-Production secrets
+Access tokens
+Passwords
+Private service credentials
 ```
 
-Existing local secret values are preserved when setup runs again.
+to the public repository.
 
----
-
-# Manual Scripts
-
-Bootstrap is recommended, but the lower-level scripts can be used
-independently.
-
----
-
-## Rename Only
-
-Interactive:
-
-```bash
-./Scripts/rename_project.sh
-```
-
-Non-interactive:
-
-```bash
-./Scripts/rename_project.sh \
-    --name MyAwesomeApp \
-    --yes
-```
-
-This changes the technical project identity.
-
-It does not change:
-
-```text
-Application display name
-Bundle identifier
-API configuration
-Secrets
-```
-
----
-
-## Configure Only
-
-Interactive:
-
-```bash
-./Scripts/setup.sh
-```
-
-Non-interactive:
-
-```bash
-./Scripts/setup.sh \
-    --display-name "My Awesome App" \
-    --bundle-id "com.company.myawesomeapp" \
-    --api-scheme "https" \
-    --api-host "api.example.com" \
-    --yes
-```
-
----
-
-# Recommended Workflow
-
-For a new repository:
-
-```text
-Use this template
-        ↓
-Create repository
-        ↓
-Clone repository
-        ↓
-./Scripts/bootstrap.sh
-        ↓
-Open generated .xcodeproj
-        ↓
-Select Development Team if required
-        ↓
-Review Secrets.xcconfig
-        ↓
-Build
-        ↓
-Run
-        ↓
-Tests
-```
-
----
-
-# Clean Git Requirement
-
-Bootstrap and rename operations require a clean Git working tree.
-
-Check with:
+Before committing configuration changes, verify:
 
 ```bash
 git status
 ```
 
-This protects existing work and provides a predictable rollback point.
+and inspect any new configuration files carefully.
+
+---
+
+# Git Ignore
+
+Local SwiftPM and build artifacts should remain untracked.
+
+Examples include:
+
+```text
+.swiftpm/
+.build/
+```
+
+Local secret configuration should also remain ignored.
+
+`Package.resolved`, when intentionally tracked by the application project,
+should remain committed so dependency resolution is reproducible.
+
+---
+
+# Swift Packages
+
+The repository contains local application packages:
+
+```text
+Packages/
+├── FeaturesPackage/
+└── SharedPackage/
+```
+
+`FeaturesPackage` contains application feature modules.
+
+`SharedPackage` contains reusable application-specific modules.
+
+Generic dependencies that are reusable across applications may be remote Swift
+packages.
+
+For example:
+
+```text
+CoreNetworking
+```
+
+is consumed as a reusable remote dependency.
+
+---
+
+# Opening the Project
+
+After setup, open:
+
+```text
+ScalableIOSAppTemplate.xcodeproj
+```
+
+or the renamed project if `rename_project.sh` has already been executed.
+
+Allow Xcode to resolve Swift Package Manager dependencies.
+
+Then perform an initial build:
+
+```text
+⌘B
+```
+
+and run tests:
+
+```text
+⌘U
+```
+
+Both should succeed before feature development begins.
+
+---
+
+# Package Manifest Validation
+
+The local package manifests can also be validated from Terminal.
+
+For `SharedPackage`:
+
+```bash
+swift package \
+    --package-path Packages/SharedPackage \
+    dump-package >/dev/null \
+    && echo "SharedPackage ✅"
+```
+
+For `FeaturesPackage`:
+
+```bash
+swift package \
+    --package-path Packages/FeaturesPackage \
+    dump-package >/dev/null \
+    && echo "FeaturesPackage ✅"
+```
+
+`dump-package` is useful for validating the package manifests without trying to
+build the package for the macOS host platform.
+
+---
+
+# Why Plain `swift build` Is Not the Default Package Check
+
+The application packages target iOS.
+
+Running:
+
+```bash
+swift build \
+    --package-path Packages/FeaturesPackage
+```
+
+from macOS may attempt to evaluate/build dependencies for the host platform.
+
+A dependency may support a different minimum macOS version even though the
+actual application is intended for iOS.
+
+For this template:
+
+```text
+swift package dump-package
+```
+
+is used for lightweight manifest validation.
+
+The actual compilation check is performed through the Xcode iOS build.
+
+---
+
+# Feature Generation
+
+After initial setup, new features can be created with:
+
+```bash
+./Scripts/generate_feature.sh
+```
+
+The generator supports flexible module selection.
+
+For example:
+
+```bash
+./Scripts/generate_feature.sh \
+    --name Profile \
+    --modules domain,data,interface \
+    --networking \
+    --tests \
+    --yes
+```
+
+A feature does not need to contain all available architectural modules.
+
+See:
+
+[Feature Generator](FeatureGenerator.md)
+
+for complete usage instructions.
+
+---
+
+# Adding Feature Products to the Application
+
+Creating a feature inside `FeaturesPackage` does not automatically add every
+feature product to the host application target.
+
+The application should explicitly depend on the feature product it needs.
+
+For example, an Interface-only feature may create:
+
+```text
+AboutInterface
+```
+
+Add `AboutInterface` to the application target before using:
+
+```swift
+import AboutInterface
+```
+
+A full feature may instead expose its entry point through:
+
+```text
+AuthenticationAssembly
+```
+
+This explicit dependency keeps the application target aware only of the
+features it actually uses.
+
+---
+
+# Continuous Integration
+
+Pull requests targeting:
+
+```text
+main
+```
+
+are validated by GitHub Actions.
+
+The standard workflow checks:
+
+```text
+Shell syntax
+SharedPackage manifest
+FeaturesPackage manifest
+iOS application build
+Configured tests
+```
+
+See:
+
+[Continuous Integration](CI.md)
+
+for details.
+
+---
+
+# After Setup
+
+A successful initial setup should leave the project in a state where:
+
+```text
+Project name is correct
+Bundle identifier is correct
+Application display name is correct
+API configuration is correct
+Swift packages resolve
+Application builds
+Tests pass
+Git working tree contains only expected setup changes
+```
+
+Review:
+
+```bash
+git status
+```
+
+and:
+
+```bash
+git diff
+```
+
+before creating the initial application-specific commit.
 
 ---
 
 # Recovery
 
-Inspect generated changes:
+Because setup scripts modify files, Git is the primary recovery mechanism.
 
-```bash
-git status
-git diff
-```
-
-For a fresh repository created from the template, generated changes may be
-discarded with:
+If a setup experiment was performed on a clean working tree and all
+uncommitted changes can safely be discarded:
 
 ```bash
 git reset --hard HEAD
 git clean -fd
 ```
 
-> `git clean -fd` deletes untracked files and directories. Review what will be
-> removed before using it.
+will restore the repository to the last commit.
+
+These commands permanently remove uncommitted changes and untracked files.
+
+Use them only when that is intentional.
+
+For important work, prefer creating a commit or separate branch before
+experimenting.
 
 ---
 
-# After Bootstrap
+# Recommended Workflow
 
-After the process completes:
+A typical project creation flow is:
 
 ```text
-1. Open the renamed Xcode project
-2. Check Development Team
-3. Review local secrets
-4. Resolve Swift Packages if required
-5. Build the application
-6. Run the application
-7. Run tests with ⌘ + U
+Create fresh repository from template
+        ↓
+Verify clean Git state
+        ↓
+Run bootstrap
+        ↓
+Review configuration
+        ↓
+Open Xcode
+        ↓
+Resolve packages
+        ↓
+Build
+        ↓
+Run tests
+        ↓
+Commit initial project configuration
+        ↓
+Start feature development
 ```
 
-New application features can then be created with:
-
-```bash
-./Scripts/generate_feature.sh
-```
-
-See:
-
-[Feature Generator](FeatureGenerator.md)
+The setup tooling should reduce repetitive project configuration while keeping
+the resulting project understandable and editable without the scripts.
