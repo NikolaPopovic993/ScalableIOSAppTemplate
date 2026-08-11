@@ -6,7 +6,7 @@
 //
 
 import AuthenticationDomain
-import CoreUI
+import SharedUI
 import SwiftUI
 
 @MainActor
