@@ -1,0 +1,15 @@
+{
+  "originHash" : "fe5883bb0efa8f165f89ab62e0b07abf819454c81d4f0d7f49d12645439bd096",
+  "pins" : [
+    {
+      "identity" : "corenetworking",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/NikolaPopovic993/CoreNetworking.git",
+      "state" : {
+        "revision" : "4f6b25e190afd6a7b6a58225e5194c04fb4cc78a",
+        "version" : "2.0.0"
+      }
+    }
+  ],
+  "version" : 3
+}

@@ -1,13 +1,13 @@
 //
 //  Untitled.swift
-//  CorePackage
+//  SharedPackage
 //
 //  Created by Nikola Popovic on 7. 8. 2026..
 //
 
 import Testing
 
-@testable import CoreUtilities
+@testable import SharedUtilities
 
 struct StringTrimmedTests {
 

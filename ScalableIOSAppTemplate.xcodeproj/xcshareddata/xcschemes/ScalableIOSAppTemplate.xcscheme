@@ -30,9 +30,6 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:Packages/CorePackage/ScalableIOSAppTemplate.xctestplan">
-         </TestPlanReference>
-         <TestPlanReference
             reference = "container:ScalableIOSAppTemplate.xctestplan"
             default = "YES">
          </TestPlanReference>
