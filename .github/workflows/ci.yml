@@ -32,3 +32,9 @@ jobs:
           swift package \
             --package-path Packages/SharedPackage \
             dump-package >/dev/null
+
+      - name: Validate FeaturesPackage manifest
+        run: |
+          swift package \
+            --package-path Packages/FeaturesPackage \
+            dump-package >/dev/null
