@@ -70,6 +70,9 @@ ScalableIOSAppTemplate/
 │   └── SharedPackage/
 │
 ├── Config/
+│   └── Environments/
+│       ├── Development.xcconfig
+│       └── Production.xcconfig
 ├── Documentation/
 ├── Scripts/
 └── .github/
@@ -109,6 +112,26 @@ The host application should contain as little feature-specific business logic as
 possible.
 
 Its primary responsibility is to connect independently defined modules.
+
+---
+
+## Application Configuration
+
+Application-wide runtime configuration lives under:
+
+```text
+App/Configuration/
+```
+
+The template keeps Xcode build configurations separate from application
+environments. Environment-specific values are provided through `.xcconfig`
+files under `Config/Environments/` and exposed to Swift through
+`AppConfiguration`.
+
+Configuration is infrastructure and application composition concern; feature
+business logic should not depend directly on environment names.
+
+See [Configuration](Configuration.md) for details.
 
 ---
 
