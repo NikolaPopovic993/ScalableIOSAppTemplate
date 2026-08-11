@@ -1,40 +1,329 @@
 # Feature Generator
 
-The template includes a feature generator for creating new modular application
-features.
+The template includes a feature generator that creates the initial structure
+for a new feature inside `FeaturesPackage`.
 
-Run:
+The generator is intentionally focused on scaffolding.
+
+It does not attempt to generate business logic, repositories, use cases,
+endpoints, view models, navigation, or application-specific dependencies.
+
+The script is located at:
+
+```text
+Scripts/generate_feature.sh
+```
+
+## Basic Usage
+
+Run the generator interactively:
 
 ```bash
 ./Scripts/generate_feature.sh
 ```
 
-The generator creates the feature structure, registers its Swift targets, and
-configures common optional dependencies.
-
----
-
-## Interactive Usage
+The generator asks which modules the feature requires.
 
 Example:
 
 ```text
 Feature name: Profile
 
-Use CoreNetworking? [Y/n]:
-Y
+Include Domain? [Y/n]: y
+Include Data? [Y/n]: y
+Include Interface? [Y/n]: y
+Include Assembly? [Y/n]: y
 
-Use SharedUI? [Y/n]:
-Y
+Use CoreNetworking? [y/N]: y
+Generate Domain/Data tests? [Y/n]: y
 
-Create Domain and Data tests? [Y/n]:
-Y
-
-Create this feature? [Y/n]:
-Y
+Generate feature? [Y/n]: y
 ```
 
-The generator creates:
+## Flexible Feature Modules
+
+A feature does not need to contain every architectural module.
+
+Available modules are:
+
+```text
+Domain
+Data
+Interface
+Assembly
+```
+
+The feature should contain only the modules that provide useful architectural
+boundaries for that feature.
+
+For example, a full feature may contain:
+
+```text
+Profile
+├── Domain
+├── Data
+├── Interface
+└── Assembly
+```
+
+A simple UI-only feature may contain:
+
+```text
+About
+└── Interface
+```
+
+A feature with business logic and UI may contain:
+
+```text
+Calculator
+├── Domain
+└── Interface
+```
+
+A background feature may contain:
+
+```text
+BackgroundSync
+├── Domain
+├── Data
+└── Assembly
+```
+
+A data capability may contain only:
+
+```text
+ImageCache
+└── Data
+```
+
+The template does not require all features to follow the same structure.
+
+## CLI Usage
+
+The generator can also run non-interactively.
+
+### Full Feature
+
+```bash
+./Scripts/generate_feature.sh \
+    --name Profile \
+    --modules all \
+    --networking \
+    --tests \
+    --yes
+```
+
+### Interface-only Feature
+
+```bash
+./Scripts/generate_feature.sh \
+    --name About \
+    --modules interface \
+    --no-networking \
+    --no-tests \
+    --yes
+```
+
+### Domain + Interface
+
+```bash
+./Scripts/generate_feature.sh \
+    --name Calculator \
+    --modules domain,interface \
+    --no-networking \
+    --tests \
+    --yes
+```
+
+### Background Feature
+
+```bash
+./Scripts/generate_feature.sh \
+    --name BackgroundSync \
+    --modules domain,data,assembly \
+    --networking \
+    --tests \
+    --yes
+```
+
+### Data-only Feature
+
+```bash
+./Scripts/generate_feature.sh \
+    --name ImageCache \
+    --modules data \
+    --no-networking \
+    --tests \
+    --yes
+```
+
+## Available Arguments
+
+### `--name`
+
+Sets the feature name.
+
+The name must use PascalCase.
+
+Examples:
+
+```text
+Profile
+Authentication
+BackgroundSync
+```
+
+Example usage:
+
+```bash
+--name Profile
+```
+
+### `--modules`
+
+Selects the modules that should be created.
+
+Supported values:
+
+```text
+domain
+data
+interface
+assembly
+all
+```
+
+Multiple modules are separated with commas:
+
+```bash
+--modules domain,data,interface
+```
+
+Using:
+
+```bash
+--modules all
+```
+
+creates:
+
+```text
+Domain
+Data
+Interface
+Assembly
+```
+
+### `--networking`
+
+Enables `CoreNetworking`.
+
+Networking is supported when the feature contains:
+
+```text
+Data
+Assembly
+```
+
+or both.
+
+Example:
+
+```bash
+--networking
+```
+
+### `--no-networking`
+
+Creates the feature without `CoreNetworking`.
+
+### `--tests`
+
+Creates supported test targets.
+
+Automatic test generation currently supports:
+
+```text
+DomainTests
+DataTests
+```
+
+Test targets are created only when their corresponding modules exist.
+
+For example:
+
+```text
+Domain + Interface
+```
+
+with tests enabled creates:
+
+```text
+DomainTests
+```
+
+but not:
+
+```text
+DataTests
+```
+
+because the Data module does not exist.
+
+### `--no-tests`
+
+Creates the feature without test targets.
+
+### `--yes`
+
+Skips the final interactive confirmation.
+
+This is useful for scripts and automated workflows.
+
+## Generated Feature Configuration
+
+The generator registers the feature inside:
+
+```text
+Packages/FeaturesPackage/Package.swift
+```
+
+For example:
+
+```swift
+FeatureConfiguration(
+    name: "Calculator",
+    modules: [
+        .domain,
+        .interface
+    ],
+    usesNetworking: false,
+    hasTests: true
+),
+```
+
+This configuration produces:
+
+```text
+CalculatorDomain
+CalculatorInterface
+CalculatorDomainTests
+```
+
+It does not produce:
+
+```text
+CalculatorData
+CalculatorAssembly
+CalculatorDataTests
+```
+
+because those modules were not requested.
+
+## Generated Source Structure
+
+A full feature may look like:
 
 ```text
 Packages/FeaturesPackage/
@@ -44,357 +333,120 @@ Packages/FeaturesPackage/
 │       ├── Data/
 │       ├── Interface/
 │       └── Assembly/
-│
 └── Tests/
     └── Profile/
         ├── DomainTests/
         └── DataTests/
 ```
 
----
-
-## Generated Swift Targets
-
-For a feature named:
+A smaller feature may contain only:
 
 ```text
-Profile
+Packages/FeaturesPackage/
+└── Sources/
+    └── About/
+        └── Interface/
 ```
 
-the package creates:
+The physical directory structure follows the modules selected for the feature.
+
+## Module Dependencies
+
+`FeatureConfiguration` automatically creates dependencies between modules that
+exist.
+
+For a full feature:
 
 ```text
-ProfileDomain
-ProfileData
-ProfileInterface
-ProfileAssembly
+Domain
+Data
+Interface
+Assembly
 ```
 
-When tests are enabled:
+the dependency graph is approximately:
 
 ```text
-ProfileDomainTests
-ProfileDataTests
+Domain
+
+Data
+└── Domain
+
+Interface
+└── Domain
+
+Assembly
+├── Domain
+├── Data
+└── Interface
 ```
 
-The physical directory structure and Swift module names are intentionally
-different.
+If a module does not exist, no dependency to that module is created.
 
 For example:
 
 ```text
-Swift target:
-ProfileDomain
-
-Physical location:
-Sources/Profile/Domain
+Domain
+Interface
 ```
 
-This keeps the filesystem feature-first while preserving compiler-enforced
-module boundaries.
-
----
-
-## Feature Manifest
-
-The generator automatically registers the feature in:
+creates:
 
 ```text
-Packages/FeaturesPackage/Package.swift
+Interface
+└── Domain
 ```
 
-Example:
+without creating Data or Assembly.
+
+This allows small features to remain small without introducing unnecessary
+architectural layers.
+
+## CoreNetworking
+
+`CoreNetworking` is treated as standard infrastructure by
+`FeatureConfiguration`.
+
+For example:
 
 ```swift
 FeatureConfiguration(
-    name: "Profile",
+    name: "BackgroundSync",
+    modules: [
+        .domain,
+        .data,
+        .assembly
+    ],
     usesNetworking: true,
-    usesSharedUI: true,
     hasTests: true
 )
 ```
 
-The manifest helper converts this configuration into:
+produces a dependency graph approximately like:
 
 ```text
-Products
-Targets
-Dependencies
-Source paths
-Optional test targets
+BackgroundSyncDomain
+
+BackgroundSyncData
+├── BackgroundSyncDomain
+└── CoreNetworking
+
+BackgroundSyncAssembly
+├── BackgroundSyncDomain
+├── BackgroundSyncData
+└── CoreNetworking
 ```
 
-This avoids repeating large Swift Package target declarations for every
-feature.
+`CoreNetworking` is not automatically added to Domain or Interface.
 
----
+Domain should remain independent from networking infrastructure.
 
-# Generator Options
+## Custom Dependencies
 
-## Networking
+Dependencies that are not part of the standard feature configuration should be
+declared explicitly.
 
-Enable networking interactively:
-
-```text
-Use CoreNetworking? Y
-```
-
-or through CLI:
-
-```bash
---networking
-```
-
-Result:
-
-```swift
-usesNetworking: true
-```
-
-CoreNetworking is automatically added to the feature targets that require
-networking infrastructure.
-
-Disable with:
-
-```bash
---no-networking
-```
-
-Result:
-
-```swift
-usesNetworking: false
-```
-
----
-
-## SharedUI
-
-Enable SharedUI interactively:
-
-```text
-Use SharedUI? Y
-```
-
-or:
-
-```bash
---shared-ui
-```
-
-Result:
-
-```swift
-usesSharedUI: true
-```
-
-The manifest adds:
-
-```swift
-.product(
-    name: "SharedUI",
-    package: "SharedPackage"
-)
-```
-
-to the feature Interface target.
-
-Disable with:
-
-```bash
---no-shared-ui
-```
-
-Result:
-
-```swift
-usesSharedUI: false
-```
-
----
-
-## Tests
-
-Enable:
-
-```bash
---tests
-```
-
-This creates:
-
-```text
-<Feature>DomainTests
-<Feature>DataTests
-```
-
-Disable with:
-
-```bash
---no-tests
-```
-
-Result:
-
-```swift
-hasTests: false
-```
-
----
-
-# Non-Interactive Usage
-
-A fully configured feature:
-
-```bash
-./Scripts/generate_feature.sh \
-    --name Profile \
-    --networking \
-    --shared-ui \
-    --tests \
-    --yes
-```
-
-A minimal feature:
-
-```bash
-./Scripts/generate_feature.sh \
-    --name Onboarding \
-    --no-networking \
-    --no-shared-ui \
-    --no-tests \
-    --yes
-```
-
-Available options:
-
-```text
---name <name>
---networking
---no-networking
---shared-ui
---no-shared-ui
---tests
---no-tests
---yes
---help
-```
-
----
-
-# Generated Code
-
-The generator intentionally creates only minimal compilation-ready
-placeholders.
-
-It does not automatically create:
-
-```text
-Repositories
-Use cases
-ViewModels
-DTOs
-Endpoints
-Mappers
-Services
-```
-
-These types should be introduced when actual feature requirements justify
-them.
-
-The generator is responsible for architectural scaffolding, not business
-implementation.
-
----
-
-# Adding SharedUI Later
-
-A feature may initially be created without SharedUI:
-
-```swift
-FeatureConfiguration(
-    name: "Profile",
-    usesNetworking: true,
-    usesSharedUI: false,
-    hasTests: true
-)
-```
-
-If SharedUI is required later, change:
-
-```swift
-usesSharedUI: false
-```
-
-to:
-
-```swift
-usesSharedUI: true
-```
-
-The manifest automatically adds SharedUI to the feature Interface target.
-
-The Interface module may then use:
-
-```swift
-import SharedUI
-```
-
-Example:
-
-```swift
-import SharedUI
-import SwiftUI
-
-public struct ProfileView: View {
-
-    public init() {}
-
-    public var body: some View {
-        AppLoadingView()
-    }
-}
-```
-
-No manual target declaration is required.
-
----
-
-# Adding Networking Later
-
-Networking works in the same way.
-
-Change:
-
-```swift
-usesNetworking: false
-```
-
-to:
-
-```swift
-usesNetworking: true
-```
-
-CoreNetworking is then added to the feature modules configured by the
-manifest.
-
----
-
-# Adding Additional Dependencies
-
-The generator intentionally exposes only common feature options:
-
-```text
-CoreNetworking
-SharedUI
-Tests
-```
-
-Other dependencies should be added explicitly to the layer that actually
-requires them.
-
-`FeatureConfiguration` supports:
+`FeatureConfiguration` provides:
 
 ```swift
 domainDependencies
@@ -403,36 +455,47 @@ interfaceDependencies
 assemblyDependencies
 ```
 
-All of these dependencies are optional and default to empty arrays.
-
-A normal feature therefore remains simple:
+For example, if the Interface module uses `SharedUI`:
 
 ```swift
 FeatureConfiguration(
     name: "Profile",
+    modules: [
+        .domain,
+        .data,
+        .interface,
+        .assembly
+    ],
     usesNetworking: true,
-    usesSharedUI: true,
-    hasTests: true
+    hasTests: true,
+    interfaceDependencies: [
+        .product(
+            name: "SharedUI",
+            package: "SharedPackage"
+        )
+    ]
 )
 ```
 
----
-
-## Adding SharedUtilities to Data
-
-Suppose `ProfileData` requires functionality from:
+This means:
 
 ```text
-SharedUtilities
+ProfileInterface
+├── ProfileDomain
+└── SharedUI
 ```
 
-Configure:
+If Data uses `SharedUtilities`:
 
 ```swift
 FeatureConfiguration(
-    name: "Profile",
+    name: "Settings",
+    modules: [
+        .domain,
+        .data,
+        .interface
+    ],
     usesNetworking: true,
-    usesSharedUI: true,
     hasTests: true,
     dataDependencies: [
         .product(
@@ -443,305 +506,310 @@ FeatureConfiguration(
 )
 ```
 
-`ProfileData` can then use:
-
-```swift
-import SharedUtilities
-```
-
-The resulting dependency graph is:
+This produces approximately:
 
 ```text
-ProfileData
-├── ProfileDomain
+SettingsData
+├── SettingsDomain
 ├── CoreNetworking
 └── SharedUtilities
 ```
 
-Other Profile modules do not automatically receive access to
-`SharedUtilities`.
+Dependencies remain explicit instead of introducing configuration flags for
+every possible library.
 
----
+## Adding a Module to an Existing Feature
 
-## Adding SharedUtilities to Interface
+The structure selected when a feature is generated is not permanent.
 
-If only the Interface layer requires it:
+A feature can start small and gain additional modules as it grows.
+
+For example, a feature may initially contain:
 
 ```swift
 FeatureConfiguration(
     name: "Profile",
+    modules: [
+        .domain,
+        .data
+    ],
     usesNetworking: true,
-    usesSharedUI: true,
-    hasTests: true,
-    interfaceDependencies: [
-        .product(
-            name: "SharedUtilities",
-            package: "SharedPackage"
-        )
-    ]
+    hasTests: true
 )
 ```
 
-Then:
+Its source structure may be:
 
-```swift
-import SharedUtilities
+```text
+Profile
+├── Domain
+└── Data
 ```
 
-is available inside:
+Later the feature may require UI.
+
+Create:
+
+```text
+Packages/FeaturesPackage/Sources/Profile/Interface/
+```
+
+Then update the configuration:
+
+```swift
+FeatureConfiguration(
+    name: "Profile",
+    modules: [
+        .domain,
+        .data,
+        .interface
+    ],
+    usesNetworking: true,
+    hasTests: true
+)
+```
+
+`FeatureConfiguration` automatically connects:
 
 ```text
 ProfileInterface
+        ↓
+ProfileDomain
 ```
 
-but not automatically in Domain, Data, or Assembly.
+because the Domain module already exists.
 
----
+The same approach can be used to add:
 
-## Adding a Domain Dependency
+```text
+Domain
+Data
+Interface
+Assembly
+```
 
-Domain dependencies should be used carefully because Domain should remain
-independent from UI and infrastructure.
+later when a feature grows.
 
-A pure shared business module may be appropriate.
+The generator therefore creates the initial feature structure but does not lock
+the feature into that structure permanently.
+
+## Using SharedUI
+
+`SharedUI` is not automatically added by the generator.
+
+If a feature needs reusable application UI components, add the dependency
+explicitly:
+
+```swift
+interfaceDependencies: [
+    .product(
+        name: "SharedUI",
+        package: "SharedPackage"
+    )
+]
+```
+
+Then the Interface module can:
+
+```swift
+import SharedUI
+```
+
+This keeps the dependency graph explicit.
+
+The generator does not provide a dedicated `usesSharedUI` option.
+
+## Using SharedUtilities
+
+The same principle applies to `SharedUtilities`.
 
 For example:
 
 ```swift
-FeatureConfiguration(
-    name: "Profile",
-    usesNetworking: true,
-    usesSharedUI: true,
-    hasTests: true,
-    domainDependencies: [
-        .product(
-            name: "UserDomain",
-            package: "SharedPackage"
-        )
-    ]
-)
+dataDependencies: [
+    .product(
+        name: "SharedUtilities",
+        package: "SharedPackage"
+    )
+]
 ```
 
-This could represent:
+A dependency should be added only to the module that actually needs it.
+
+For example:
 
 ```text
-ProfileDomain
-    ↓
-UserDomain
+Domain needs dependency
+→ domainDependencies
+
+Data needs dependency
+→ dataDependencies
+
+Interface needs dependency
+→ interfaceDependencies
+
+Assembly needs dependency
+→ assemblyDependencies
 ```
 
-Avoid adding infrastructure such as:
+## Using a Feature from the Host Application
+
+Generating a feature makes its Swift Package products available, but the host
+application target should explicitly depend on the product it uses.
+
+For example, an Interface-only feature may expose:
 
 ```text
-Networking
-UI
-Persistence implementations
+AboutInterface
 ```
 
-to Domain.
+Add `AboutInterface` to the application target.
 
----
-
-## Adding an Assembly Dependency
-
-Assembly may require additional concrete infrastructure during feature
-composition.
-
-Example:
+The application can then use:
 
 ```swift
-FeatureConfiguration(
-    name: "Profile",
-    usesNetworking: true,
-    usesSharedUI: true,
-    hasTests: true,
-    assemblyDependencies: [
-        .product(
-            name: "Analytics",
-            package: "SharedPackage"
-        )
-    ]
-)
+import AboutInterface
 ```
 
-The dependency becomes available only to:
+A more complex feature may expose its application entry point through:
 
 ```text
-ProfileAssembly
+AuthenticationAssembly
 ```
 
----
+The application target can depend on:
 
-# Multiple Custom Dependencies
+```text
+AuthenticationAssembly
+```
 
-More than one dependency can be declared.
+instead.
 
-Example:
+The host application should depend only on feature products that it actually
+uses.
+
+The feature generator intentionally does not modify the Xcode application
+target automatically.
+
+## Tests
+
+When test generation is enabled:
+
+```text
+Domain exists
+→ DomainTests generated
+
+Data exists
+→ DataTests generated
+```
+
+For example:
 
 ```swift
-FeatureConfiguration(
-    name: "Profile",
-    usesNetworking: true,
-    usesSharedUI: true,
-    hasTests: true,
-    domainDependencies: [
-        .product(
-            name: "UserDomain",
-            package: "SharedPackage"
-        )
-    ],
-    dataDependencies: [
-        .product(
-            name: "SharedUtilities",
-            package: "SharedPackage"
-        )
-    ],
-    interfaceDependencies: [
-        .product(
-            name: "DesignTokens",
-            package: "SharedPackage"
-        )
-    ]
-)
-```
-
-Each dependency remains scoped to the module that consumes it.
-
----
-
-# Why Custom Dependencies Are Not Generator Questions
-
-The generator does not ask:
-
-```text
-Use SharedUtilities?
-Use Analytics?
-Use UserDomain?
-Use Session?
-Use Validation?
-```
-
-because this would make the generator increasingly coupled to the
-application's evolving architecture.
-
-Instead:
-
-```text
-Common dependency
-        ↓
-Generator option
-
-Feature-specific dependency
-        ↓
-Explicit layer dependency
-```
-
-This keeps the generator small while still allowing features to scale.
-
----
-
-# Dependency Guidelines
-
-Prefer the narrowest possible dependency scope.
-
-If only `ProfileData` requires SharedUtilities:
-
-```text
-Correct:
-ProfileData → SharedUtilities
-```
-
-Avoid:
-
-```text
-ProfileDomain → SharedUtilities
-ProfileData → SharedUtilities
-ProfileInterface → SharedUtilities
-ProfileAssembly → SharedUtilities
-```
-
-unless all four modules genuinely consume it.
-
-Explicit dependency ownership improves:
-
-```text
-Architecture clarity
-Compile-time boundaries
-Testability
-Future refactoring
-Module reuse
-```
-
----
-
-# Local vs Remote Dependencies
-
-Use this general rule:
-
-```text
-Feature-specific implementation
-        ↓
-Feature module
-
-Application-specific shared capability
-        ↓
-SharedPackage
-
-Reusable across multiple applications
-        ↓
-Separate remote Swift Package
-```
-
-Examples:
-
-```text
-ProfileMapper
-→ ProfileData
-
-AppLoadingView
-→ SharedUI
-
-Application-specific String utility
-→ SharedUtilities
-
-Current user business abstraction
-→ UserDomain when genuinely shared
-
-Generic networking
-→ CoreNetworking remote package
-```
-
----
-
-# Adding Tests Later
-
-A feature may initially have:
-
-```swift
-hasTests: false
-```
-
-Changing it to:
-
-```swift
+modules: [
+    .domain,
+    .interface
+],
 hasTests: true
 ```
 
-causes the manifest to expect:
+generates:
 
 ```text
-Tests/<Feature>/DomainTests
-Tests/<Feature>/DataTests
+FeatureDomainTests
 ```
 
-Those directories and source files must also exist.
+but does not generate:
 
-For this reason, enabling tests through the generator when creating a feature
-is usually recommended.
+```text
+FeatureDataTests
+```
 
----
+because Data does not exist.
 
-# What the Generator Does Not Modify
+Automatic generation currently does not create:
+
+```text
+InterfaceTests
+AssemblyTests
+```
+
+Those test targets can be introduced manually if a feature requires them.
+
+## Git Safety
+
+The generator requires a clean Git working tree before modifying the
+repository.
+
+Before generating a feature:
+
+```bash
+git status
+```
+
+should report:
+
+```text
+nothing to commit, working tree clean
+```
+
+This makes generated changes easy to inspect and revert.
+
+If a generated feature was created only for testing, the uncommitted changes
+can be removed with:
+
+```bash
+git reset --hard HEAD
+git clean -fd
+```
+
+These commands should only be used when all uncommitted changes can safely be
+discarded.
+
+## Manifest Validation
+
+After generating a feature, the script validates:
+
+```text
+Packages/FeaturesPackage/Package.swift
+```
+
+using:
+
+```bash
+swift package \
+    --package-path Packages/FeaturesPackage \
+    dump-package
+```
+
+If validation fails, the generator restores the previous `Package.swift` and
+removes the generated feature directories.
+
+This prevents an invalid feature configuration from being left in the
+repository.
+
+## Invalid Configurations
+
+The generator validates some invalid combinations before creating files.
+
+For example:
+
+```bash
+./Scripts/generate_feature.sh \
+    --name About \
+    --modules interface \
+    --networking \
+    --yes
+```
+
+is rejected because automatic `CoreNetworking` integration requires Data or
+Assembly.
+
+A feature must also contain at least one module.
+
+For example, a feature cannot be generated with all modules disabled.
+
+## What the Generator Does Not Do
 
 The generator intentionally does not modify:
 
@@ -749,72 +817,68 @@ The generator intentionally does not modify:
 AppContainer
 RootView
 Application navigation
-project.pbxproj
-Xcode Test Plan
-Business-specific integration
-Custom feature dependencies
+Xcode application target dependencies
+Test Plan configuration
+Feature-specific dependencies
 ```
 
-A generator cannot determine whether a feature belongs in:
+It also does not generate application-specific implementation such as:
 
 ```text
-Root flow
-Navigation destination
-Tab
-Sheet
-Full-screen cover
-Child flow
+Business models
+Repositories
+Use cases
+Endpoints
+View models
+Navigation flows
 ```
 
-Those decisions remain explicit.
+Those decisions depend on the feature and should remain explicit.
 
----
+## Why the Generator Is Intentionally Small
 
-# After Generating a Feature
+The generator should remove repetitive setup work without making architectural
+decisions for the developer.
 
-Typical next steps:
+Its responsibility is:
 
 ```text
-1. Open Xcode
-2. Resolve package changes if required
-3. Add the feature Assembly product to the host application if needed
-4. Wire the FeatureBuilder through AppContainer
-5. Add generated tests to the Xcode Test Plan if required
-6. Add feature-specific dependencies when needed
-7. Implement business requirements
+Feature name
+    ↓
+Selected modules
+    ↓
+Directories
+    ↓
+SwiftPM products and targets
+    ↓
+Optional networking
+    ↓
+Optional tests
 ```
 
----
+After that, implementation belongs to the application.
 
-# Git Safety
+This avoids generating large amounts of boilerplate that may never be needed.
 
-The generator requires a clean Git working tree.
+## Design Principle
 
-Before generation:
-
-```bash
-git status
-```
-
-should show:
+Start with the smallest feature structure that makes sense.
 
 ```text
-nothing to commit, working tree clean
+Simple feature
+    ↓
+small module set
+
+Feature grows
+    ↓
+add required modules
+
+Dependencies grow
+    ↓
+add explicit dependencies
 ```
 
-Generated changes can then be reviewed with:
+A feature should not have Domain, Data, Interface, or Assembly only because the
+template provides those modules.
 
-```bash
-git status
-git diff
-```
-
-For disposable generator testing, changes can be removed with:
-
-```bash
-git reset --hard HEAD
-git clean -fd
-```
-
-> `git clean -fd` removes untracked files and directories. Review its effect
-> before using it in a working repository.
+Each module should exist because it provides a useful architectural boundary.
