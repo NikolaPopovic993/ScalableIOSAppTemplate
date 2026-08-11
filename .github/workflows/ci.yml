@@ -48,3 +48,7 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             build
+
+      - name: List available iOS simulators
+        run: |
+          xcrun simctl list devices available
