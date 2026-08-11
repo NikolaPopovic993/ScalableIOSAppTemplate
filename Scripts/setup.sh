@@ -10,26 +10,30 @@ set -e
 #
 # Can be used interactively:
 #
-#   ./Scripts/setup.sh
+# ./Scripts/setup.sh
 #
 # Or non-interactively:
 #
-#   ./Scripts/setup.sh \
-#       --display-name "My Awesome App" \
-#       --bundle-id "com.company.myawesomeapp" \
-#       --api-scheme "https" \
-#       --api-host "api.example.com" \
-#       --yes
+# ./Scripts/setup.sh \
+#     --display-name "My Awesome App" \
+#     --bundle-id "com.company.myawesomeapp" \
+#     --api-scheme "https" \
+#     --api-host "api.example.com" \
+#     --yes
 #
 # ---------------------------------------------------------
-
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 CONFIG_DIR="$ROOT_DIR/Config"
+ENVIRONMENTS_DIR="$CONFIG_DIR/Environments"
 
 SHARED_CONFIG="$CONFIG_DIR/Shared.xcconfig"
+
+DEVELOPMENT_CONFIG="$ENVIRONMENTS_DIR/Development.xcconfig"
+PRODUCTION_CONFIG="$ENVIRONMENTS_DIR/Production.xcconfig"
+
 SECRETS_EXAMPLE="$CONFIG_DIR/Secrets.example.xcconfig"
 SECRETS_CONFIG="$CONFIG_DIR/Secrets.xcconfig"
 
@@ -38,7 +42,6 @@ BUNDLE_ID=""
 API_SCHEME=""
 API_HOST=""
 AUTO_CONFIRM=false
-
 
 # MARK: - Helpers
 
@@ -50,14 +53,12 @@ print_header() {
     echo ""
 }
 
-
 fail() {
     echo ""
     echo "❌ $1"
     echo ""
     exit 1
 }
-
 
 print_usage() {
     echo ""
@@ -78,7 +79,6 @@ print_usage() {
     echo ""
 }
 
-
 validate_required_file() {
     local file="$1"
 
@@ -86,7 +86,6 @@ validate_required_file() {
         fail "Required file not found: $file"
     fi
 }
-
 
 replace_config_value() {
     local file="$1"
@@ -102,11 +101,9 @@ replace_config_value() {
     fi
 }
 
-
 # MARK: - Arguments
 
 while [[ $# -gt 0 ]]; do
-
     case "$1" in
 
         --display-name)
@@ -148,46 +145,37 @@ while [[ $# -gt 0 ]]; do
 
 Run ./Scripts/setup.sh --help for usage."
             ;;
-
     esac
-
 done
-
 
 # MARK: - Validation
 
 validate_required_file "$SHARED_CONFIG"
+validate_required_file "$DEVELOPMENT_CONFIG"
+validate_required_file "$PRODUCTION_CONFIG"
 validate_required_file "$SECRETS_EXAMPLE"
-
 
 # MARK: - Input
 
 print_header
 
-
 if [[ -z "$DISPLAY_NAME" ]]; then
-
     read -r -p "App display name: " DISPLAY_NAME
 
     while [[ -z "$DISPLAY_NAME" ]]; do
         echo "App display name cannot be empty."
         read -r -p "App display name: " DISPLAY_NAME
     done
-
 fi
 
-
 if [[ -z "$BUNDLE_ID" ]]; then
-
     read -r -p "Bundle identifier: " BUNDLE_ID
 
     while [[ -z "$BUNDLE_ID" ]]; do
         echo "Bundle identifier cannot be empty."
         read -r -p "Bundle identifier: " BUNDLE_ID
     done
-
 fi
-
 
 if [[ -z "$API_SCHEME" ]]; then
     read -r -p "API scheme [https]: " API_SCHEME
@@ -195,13 +183,11 @@ fi
 
 API_SCHEME="${API_SCHEME:-https}"
 
-
 if [[ -z "$API_HOST" ]]; then
     read -r -p "API host [dummyjson.com]: " API_HOST
 fi
 
 API_HOST="${API_HOST:-dummyjson.com}"
-
 
 # MARK: - Summary
 
@@ -213,11 +199,9 @@ echo "Bundle ID:    $BUNDLE_ID"
 echo "API:          $API_SCHEME://$API_HOST"
 echo ""
 
-
 # MARK: - Confirmation
 
 if [[ "$AUTO_CONFIRM" != true ]]; then
-
     read -r -p "Apply this configuration? [Y/n]: " CONFIRM
 
     CONFIRM="${CONFIRM:-Y}"
@@ -228,9 +212,7 @@ if [[ "$AUTO_CONFIRM" != true ]]; then
         echo ""
         exit 0
     fi
-
 fi
-
 
 # MARK: - Shared Configuration
 
@@ -244,21 +226,26 @@ replace_config_value \
     "APP_BUNDLE_IDENTIFIER" \
     "$BUNDLE_ID"
 
-replace_config_value \
-    "$SHARED_CONFIG" \
-    "API_SCHEME" \
-    "$API_SCHEME"
+# MARK: - Environment Configuration
 
-replace_config_value \
-    "$SHARED_CONFIG" \
-    "API_HOST" \
-    "$API_HOST"
+for environment_config in \
+    "$DEVELOPMENT_CONFIG" \
+    "$PRODUCTION_CONFIG"
+do
+    replace_config_value \
+        "$environment_config" \
+        "API_SCHEME" \
+        "$API_SCHEME"
 
+    replace_config_value \
+        "$environment_config" \
+        "API_HOST" \
+        "$API_HOST"
+done
 
 # MARK: - Secrets
 
 if [[ ! -f "$SECRETS_CONFIG" ]]; then
-
     cp \
         "$SECRETS_EXAMPLE" \
         "$SECRETS_CONFIG"
@@ -266,15 +253,11 @@ if [[ ! -f "$SECRETS_CONFIG" ]]; then
     echo ""
     echo "Created local secrets file:"
     echo "Config/Secrets.xcconfig"
-
 else
-
     echo ""
     echo "Local secrets file already exists."
     echo "Existing values were preserved."
-
 fi
-
 
 # MARK: - Detect Project
 
@@ -290,9 +273,8 @@ PROJECT_FILE="$(
 if [[ -n "$PROJECT_FILE" ]]; then
     PROJECT_NAME="$(basename "$PROJECT_FILE")"
 else
-    PROJECT_NAME="<project>.xcodeproj"
+    PROJECT_NAME=".xcodeproj"
 fi
-
 
 # MARK: - Finished
 

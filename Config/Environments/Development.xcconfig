@@ -1,0 +1,9 @@
+//
+//  Development.xcconfig
+//  ScalableIOSAppTemplate
+//
+
+APP_ENVIRONMENT = development
+
+API_SCHEME = https
+API_HOST = dummyjson.com

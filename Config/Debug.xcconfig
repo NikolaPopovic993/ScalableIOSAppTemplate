@@ -2,10 +2,8 @@
 //  Debug.xcconfig
 //  ScalableIOSAppTemplate
 //
-//  Created by Nikola Popovic on 7. 8. 2026..
-//
 
 #include "Shared.xcconfig"
+#include "Environments/Development.xcconfig"
 
-APP_ENVIRONMENT = development
 ENABLE_APP_LOGGING = YES

@@ -76,6 +76,9 @@ ScalableIOSAppTemplate/
 │   └── SharedPackage/
 │
 ├── Config/
+│   ├── Environments/
+│   │   ├── Development.xcconfig
+│   │   └── Production.xcconfig
 │   ├── Shared.xcconfig
 │   ├── Debug.xcconfig
 │   ├── Release.xcconfig
@@ -84,6 +87,7 @@ ScalableIOSAppTemplate/
 ├── Documentation/
 │   ├── Architecture.md
 │   ├── CI.md
+│   ├── Configuration.md
 │   ├── FeatureGenerator.md
 │   └── Setup.md
 │
@@ -445,36 +449,31 @@ This keeps application dependencies explicit.
 
 ## Configuration
 
-Application configuration is managed through `.xcconfig` files:
+The template separates Xcode build configurations from application environments.
+
+By default:
 
 ```text
-Config/
-├── Shared.xcconfig
-├── Debug.xcconfig
-├── Release.xcconfig
-└── Secrets.example.xcconfig
+Debug   → Development
+Release → Production
 ```
 
-Configuration can include values such as:
+Development and Production are defaults, not restrictions. Projects can add
+custom environments such as Staging, QA, Demo, or Local without changing the
+core configuration model.
+
+Environment-specific values such as API configuration live under:
 
 ```text
-Application display name
-Bundle identifier
-API scheme
-API host
-Application version
-Build number
-Environment
-Logging configuration
+Config/Environments/
 ```
+
+while application-wide values remain in `Shared.xcconfig`.
 
 Avoid storing real secrets in tracked configuration files.
 
-See:
-
-[Setup](Documentation/Setup.md)
-
-for configuration details.
+See [Configuration](Documentation/Configuration.md) for the configuration model
+and [Setup](Documentation/Setup.md) for project setup instructions.
 
 ## Testing
 
@@ -580,6 +579,7 @@ Detailed documentation is kept outside the README so the repository overview
 remains concise.
 
 - [Architecture](Documentation/Architecture.md)
+- [Configuration](Documentation/Configuration.md)
 - [Feature Generator](Documentation/FeatureGenerator.md)
 - [Setup](Documentation/Setup.md)
 - [Continuous Integration](Documentation/CI.md)
