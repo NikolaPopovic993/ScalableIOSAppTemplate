@@ -104,6 +104,7 @@ API_HOST = api.example.com
 ```text
 #include "Shared.xcconfig"
 #include "Environments/Development.xcconfig"
+#include? "Secrets.xcconfig"
 
 ENABLE_APP_LOGGING = YES
 ```
@@ -113,6 +114,7 @@ ENABLE_APP_LOGGING = YES
 ```text
 #include "Shared.xcconfig"
 #include "Environments/Production.xcconfig"
+#include? "Secrets.xcconfig"
 
 ENABLE_APP_LOGGING = NO
 ```
@@ -246,6 +248,15 @@ in `AppConfiguration`.
 `Secrets.example.xcconfig` is committed to Git.
 
 `Secrets.xcconfig` is local and should remain ignored.
+
+Debug and Release include it optionally, so a fresh clone remains buildable
+before the local file is created. Values defined in the local file are then
+available as Xcode build settings. Expose only the values required at runtime
+through `Info.plist` and `AppConfiguration`.
+
+Values embedded in a client application can still be extracted from the built
+application. Do not treat an API key shipped inside the app as a server-side
+secret.
 
 Do not commit real API keys, tokens, or other secrets.
 

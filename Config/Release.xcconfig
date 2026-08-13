@@ -5,5 +5,6 @@
 
 #include "Shared.xcconfig"
 #include "Environments/Production.xcconfig"
+#include? "Secrets.xcconfig"
 
 ENABLE_APP_LOGGING = NO

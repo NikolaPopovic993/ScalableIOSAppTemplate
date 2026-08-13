@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		9E0928FF3029BA8B00FE4DE3 /* CoreNetworking in Frameworks */ = {isa = PBXBuildFile; productRef = 9E0928FE3029BA8B00FE4DE3 /* CoreNetworking */; };
 		9E0929093029C5A100FE4DE3 /* AuthenticationAssembly in Frameworks */ = {isa = PBXBuildFile; productRef = 9E0929083029C5A100FE4DE3 /* AuthenticationAssembly */; };
+		9E092920302A000000FE4DE3 /* CoreNetworkingDiagnostics in Frameworks */ = {isa = PBXBuildFile; productRef = 9E092921302A000000FE4DE3 /* CoreNetworkingDiagnostics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -94,6 +95,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E0928FF3029BA8B00FE4DE3 /* CoreNetworking in Frameworks */,
+				9E092920302A000000FE4DE3 /* CoreNetworkingDiagnostics in Frameworks */,
 				9E0929093029C5A100FE4DE3 /* AuthenticationAssembly in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -159,14 +161,11 @@
 			);
 			fileSystemSynchronizedGroups = (
 				9E09280A3025FE0100FE4DE3 /* ScalableIOSAppTemplate */,
-				9E09283B3026006F00FE4DE3 /* Config */,
-				9E09285630260C6A00FE4DE3 /* Packages */,
-				9E09290B3029C97900FE4DE3 /* Documentation */,
-				9E0929133029D34E00FE4DE3 /* Scripts */,
 			);
 			name = ScalableIOSAppTemplate;
 			packageProductDependencies = (
 				9E0928FE3029BA8B00FE4DE3 /* CoreNetworking */,
+				9E092921302A000000FE4DE3 /* CoreNetworkingDiagnostics */,
 				9E0929083029C5A100FE4DE3 /* AuthenticationAssembly */,
 			);
 			productName = ScalableIOSAppTemplate;
@@ -383,7 +382,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -442,7 +440,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -458,11 +455,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ScalableIOSAppTemplate/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "$(APP_DISPLAY_NAME)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -472,8 +467,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -491,11 +484,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ScalableIOSAppTemplate/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "$(APP_DISPLAY_NAME)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -505,8 +496,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -523,11 +512,8 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = testStreamApp.ScalableIOSAppTemplateTests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -544,11 +530,8 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = testStreamApp.ScalableIOSAppTemplateTests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -562,12 +545,10 @@
 		};
 		9E0928303025FE0200FE4DE3 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = testStreamApp.ScalableIOSAppTemplateUITests;
+				buildSettings = {
+					CODE_SIGN_STYLE = Automatic;
+					GENERATE_INFOPLIST_FILE = YES;
+					PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).uitests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -581,12 +562,10 @@
 		};
 		9E0928313025FE0200FE4DE3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = testStreamApp.ScalableIOSAppTemplateUITests;
+				buildSettings = {
+					CODE_SIGN_STYLE = Automatic;
+					GENERATE_INFOPLIST_FILE = YES;
+					PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).uitests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -652,7 +631,7 @@
 			repositoryURL = "https://github.com/NikolaPopovic993/CoreNetworking.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
+				minimumVersion = 2.0.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -666,6 +645,11 @@
 		9E0929083029C5A100FE4DE3 /* AuthenticationAssembly */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AuthenticationAssembly;
+		};
+		9E092921302A000000FE4DE3 /* CoreNetworkingDiagnostics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9E0928FD3029BA8B00FE4DE3 /* XCRemoteSwiftPackageReference "CoreNetworking" */;
+			productName = CoreNetworkingDiagnostics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

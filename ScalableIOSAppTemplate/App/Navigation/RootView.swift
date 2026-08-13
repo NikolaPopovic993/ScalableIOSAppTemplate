@@ -6,9 +6,6 @@
 //
 
 import SwiftUI
-import SharedUI
-
-import SwiftUI
 
 @MainActor
 struct RootView: View {

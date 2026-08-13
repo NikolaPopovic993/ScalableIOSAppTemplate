@@ -235,6 +235,7 @@ For example:
 ```text
 #include "Shared.xcconfig"
 #include "Environments/Development.xcconfig"
+#include? "Secrets.xcconfig"
 
 ENABLE_APP_LOGGING = YES
 ```
@@ -251,6 +252,7 @@ For example:
 ```text
 #include "Shared.xcconfig"
 #include "Environments/Production.xcconfig"
+#include? "Secrets.xcconfig"
 
 ENABLE_APP_LOGGING = NO
 ```

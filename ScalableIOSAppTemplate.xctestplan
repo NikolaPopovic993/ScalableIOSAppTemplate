@@ -21,6 +21,13 @@
     },
     {
       "target" : {
+        "containerPath" : "container:ScalableIOSAppTemplate.xcodeproj",
+        "identifier" : "9E09281E3025FE0200FE4DE3",
+        "name" : "ScalableIOSAppTemplateUITests"
+      }
+    },
+    {
+      "target" : {
         "containerPath" : "container:Packages\/FeaturesPackage",
         "identifier" : "AuthenticationDataTests",
         "name" : "AuthenticationDataTests"
@@ -31,6 +38,13 @@
         "containerPath" : "container:Packages\/FeaturesPackage",
         "identifier" : "AuthenticationDomainTests",
         "name" : "AuthenticationDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/SharedPackage",
+        "identifier" : "SharedUtilitiesTests",
+        "name" : "SharedUtilitiesTests"
       }
     }
   ],

@@ -1,5 +1,5 @@
 //
-//  Untitled.swift
+//  LoginEndpoint.swift
 //  FeaturesPackage
 //
 //  Created by Nikola Popovic on 10. 8. 2026..
@@ -17,8 +17,7 @@ struct LoginEndpoint: Endpoint {
 
     let method: HTTPMethod = .post
 
-//    let authenticationRequirement:
-//        AuthenticationRequirement = .none
+    let authenticationRequirement: AuthenticationRequirement = .none
 
     let body: Data?
 

@@ -91,13 +91,54 @@ replace_config_value() {
     local file="$1"
     local key="$2"
     local value="$3"
+    local escaped_value
+
+    escaped_value="$(
+        printf '%s' "$value" |
+            sed 's/[\\&|]/\\&/g'
+    )"
 
     if grep -q "^${key} =" "$file"; then
         sed -i '' \
-            "s|^${key} =.*|${key} = ${value}|" \
+            "s|^${key} =.*|${key} = ${escaped_value}|" \
             "$file"
     else
         echo "${key} = ${value}" >> "$file"
+    fi
+}
+
+validate_single_line() {
+    local label="$1"
+    local value="$2"
+
+    if [[ "$value" == *$'\n'* || "$value" == *$'\r'* ]]; then
+        fail "$label must be a single line."
+    fi
+}
+
+validate_display_name() {
+    [[ -n "$DISPLAY_NAME" ]] || fail "Application display name cannot be empty."
+    validate_single_line "Application display name" "$DISPLAY_NAME"
+}
+
+validate_bundle_identifier() {
+    if [[ ! "$BUNDLE_ID" =~ ^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$ ]]; then
+        fail "Bundle identifier must use reverse-domain format, for example com.company.myapp."
+    fi
+}
+
+validate_api_scheme() {
+    if [[ "$API_SCHEME" != "https" && "$API_SCHEME" != "http" ]]; then
+        fail "API scheme must be either 'https' or 'http'."
+    fi
+}
+
+validate_api_host() {
+    [[ -n "$API_HOST" ]] || fail "API host cannot be empty."
+    validate_single_line "API host" "$API_HOST"
+
+    if [[ "$API_HOST" == *"://"* || "$API_HOST" == */* ]]; then
+        fail "API host must contain only a host name, for example api.example.com."
     fi
 }
 
@@ -188,6 +229,11 @@ if [[ -z "$API_HOST" ]]; then
 fi
 
 API_HOST="${API_HOST:-dummyjson.com}"
+
+validate_display_name
+validate_bundle_identifier
+validate_api_scheme
+validate_api_host
 
 # MARK: - Summary
 
